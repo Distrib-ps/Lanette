@@ -470,7 +470,7 @@ export const formatLinks: Dict<IFormatDataLinks> = {
 	},
 	'gen4lc': {
 		info: 'https://www.smogon.com/dex/dp/formats/lc',
-		teams: 'https://www.smogon.com/forums/threads/3549991/post-6431088',
+		teams: 'https://www.smogon.com/forums/threads/dpp-lc.3760638/',
 		viability: 'https://www.smogon.com/forums/threads/3573461',
 		ruinsOfAlphTeams: 'https://www.smogon.com/roa/?format=gen4lc',
 	},
