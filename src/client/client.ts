@@ -78,7 +78,7 @@ const NEWLINE = /\n/g;
 const CODE_LINEBREAK = /<wbr \/>/g;
 
 const DEFAULT_GROUP_SYMBOLS: KeyedDict<GroupName, string> = {
-	'administrator': '&',
+	'administrator': '~',
 	'roomowner': '#',
 	'host': '\u2605',
 	'moderator': '@',
