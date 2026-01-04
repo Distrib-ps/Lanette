@@ -211,6 +211,11 @@ interface IQueuedScriptedGame {
 	time: number;
 }
 
+interface IQueuedTournamentGame {
+	formatid: string;
+	time: number;
+}
+
 interface IQueuedTournament {
 	formatid: string;
 	playerCap: number;
