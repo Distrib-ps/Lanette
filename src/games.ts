@@ -1531,7 +1531,7 @@ export class Games {
 				if (database.queuedTournamentGame) {
 					const queuedFormat = this.getFormat(database.queuedTournamentGame.formatid, true);
 					if (!Array.isArray(queuedFormat) && this.canCreateGame(room, queuedFormat) === true) {
-						gameTarget = queuedFormat.name;
+						gameTarget = queuedFormat.inputTarget;
 					}
 					delete database.queuedTournamentGame;
 					Storage.tryExportDatabase(room.id);
