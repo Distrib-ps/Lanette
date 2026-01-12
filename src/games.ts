@@ -1527,11 +1527,23 @@ export class Games {
 			const now = Date.now();
 			if (type === 'tournament') {
 				let gameTarget = "";
-				const leastPlayedFormats = this.getLeastPlayedFormats(room, this.getTournamentFormatList());
-				for (const leastPlayedFormat of leastPlayedFormats) {
-					if (this.canCreateGame(room, leastPlayedFormat) === true) {
-						gameTarget = leastPlayedFormat.name;
-						break;
+
+				if (database.queuedTournamentGame) {
+					const queuedFormat = this.getFormat(database.queuedTournamentGame.formatid, true);
+					if (!Array.isArray(queuedFormat) && this.canCreateGame(room, queuedFormat) === true) {
+						gameTarget = queuedFormat.inputTarget;
+					}
+					delete database.queuedTournamentGame;
+					Storage.tryExportDatabase(room.id);
+				}
+
+				if (!gameTarget) {
+					const leastPlayedFormats = this.getLeastPlayedFormats(room, this.getTournamentFormatList());
+					for (const leastPlayedFormat of leastPlayedFormats) {
+						if (this.canCreateGame(room, leastPlayedFormat) === true) {
+							gameTarget = leastPlayedFormat.name;
+							break;
+						}
 					}
 				}
 

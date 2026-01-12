@@ -211,6 +211,11 @@ interface IQueuedScriptedGame {
 	time: number;
 }
 
+interface IQueuedTournamentGame {
+	formatid: string;
+	time: number;
+}
+
 interface IQueuedTournament {
 	formatid: string;
 	playerCap: number;
@@ -284,6 +289,7 @@ export interface IDatabase {
 	pastUserHostedGames?: IPastGame[];
 	queuedScriptedGame?: IQueuedScriptedGame;
 	queuedTournament?: IQueuedTournament;
+	queuedTournamentGames?: IQueuedTournamentGame[];
 	randomTournamentFormats?: string[];
 	roomSampleTeamsLink?: string;
 	scriptedGameCounts?: Dict<number>;

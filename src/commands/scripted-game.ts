@@ -747,6 +747,132 @@ export const commands: BaseCommandDefinitions = {
 		syntax: ["[format]"],
 		description: ["creates a new scripted tournament game with the given format"],
 	},
+	queuetournamentgame: {
+		command(target, room, user, cmd) {
+			if (this.isPm(room)) return;
+			if (!Games.canUseRestrictedCommand(room, user)) return;
+			if (!Config.allowTournamentGames || !Config.allowTournamentGames.includes(room.id)) {
+				return this.sayError(['disabledTournamentGameFeatures', room.title]);
+			}
+			if (!Users.self.hasRank(room, 'bot')) return this.sayError(['missingBotRankForFeatures', 'scripted game']);
+
+			const database = Storage.getDatabase(room);
+
+			if (!target) {
+				if (database.queuedTournamentGame) {
+					delete database.queuedTournamentGame;
+					Storage.tryExportDatabase(room.id);
+					this.say("The queued tournament game has been cleared.");
+				} else {
+					this.say("There is no tournament game queued.");
+				}
+				return;
+			}
+
+			let format: IGameFormat | undefined;
+			if (cmd === 'queuerandomtournamentgame' || cmd === 'qrtg' || Tools.toId(target) === 'random') {
+				const formats = Tools.shuffle(Games.getTournamentFormatList());
+				for (const randomFormat of formats) {
+					if (Games.canCreateGame(room, randomFormat) === true) {
+						format = randomFormat;
+						break;
+					}
+				}
+				if (!format) return this.say("A random tournament game could not be chosen.");
+			} else {
+				const inputFormat = Games.getFormat(target, true);
+				if (Array.isArray(inputFormat)) return this.sayError(inputFormat);
+				if (!inputFormat.tournamentGame) return this.say(inputFormat.name + " is not a tournament game!");
+				format = inputFormat;
+			}
+
+			database.queuedTournamentGame = {
+				formatid: format.inputTarget,
+				time: Date.now(),
+			};
+			Storage.tryExportDatabase(room.id);
+
+			this.say("The next tournament game has been set to **" + format.name + "**! It will start after the cooldown.");
+		},
+		chatOnly: true,
+		aliases: ['qtg', 'queuetourgame', 'queuerandomtournamentgame', 'qrtg'],
+		syntax: ["[format]"],
+		description: ["queues the next tournament game to be the given format"],
+	},
+	nexttournamentgame: {
+		command(target, room, user, cmd) {
+			const privateHtml = cmd === 'nexttournamentgameprivate' || cmd === 'ntgprivate';
+
+			let tournamentRoom: Room;
+			if (this.isPm(room)) {
+				const targetRoom = Rooms.search(target);
+				if (!targetRoom) return this.sayError(['invalidBotRoom', target]);
+				if (!Config.allowTournamentGames || !Config.allowTournamentGames.includes(targetRoom.id)) {
+					return this.sayError(['disabledTournamentGameFeatures', targetRoom.title]);
+				}
+				if (!user.rooms.has(targetRoom)) return this.sayError(['noPmHtmlRoom', targetRoom.title]);
+				tournamentRoom = targetRoom;
+			} else {
+				if (!user.hasRank(room, 'star') && !Games.canUseRestrictedCommand(room, user)) return;
+				if (!Config.allowTournamentGames || !Config.allowTournamentGames.includes(room.id)) {
+					return this.sayError(['disabledTournamentGameFeatures', room.title]);
+				}
+				if (target) {
+					this.run('queuetournamentgame');
+					return;
+				}
+				tournamentRoom = room;
+			}
+
+			const database = Storage.getDatabase(tournamentRoom);
+			const errorText = "There is no tournament game queued for " + (this.pm ? tournamentRoom.title : "this room") + ".";
+
+			if (!database.queuedTournamentGame) {
+				if (privateHtml) {
+					tournamentRoom.sayPrivateHtml(user, errorText);
+				} else {
+					this.say(errorText);
+				}
+				return;
+			}
+
+			const format = Games.getFormat(database.queuedTournamentGame.formatid, true);
+			if (Array.isArray(format)) {
+				if (privateHtml) {
+					tournamentRoom.sayPrivateHtml(user, errorText);
+				} else {
+					this.say(errorText);
+				}
+				delete database.queuedTournamentGame;
+				Storage.tryExportDatabase(tournamentRoom.id);
+				return;
+			}
+
+			const remainingCooldown = Games.getRemainingTournamentGameCooldown(tournamentRoom);
+
+			let html = "<div class='infobox infobox-limited'><b>Next queued" + (this.pm ? " " + tournamentRoom.title : "") +
+				" tournament game</b>: " + format.name + "<br />";
+
+			if (tournamentRoom.game) {
+				html += "<b>Status</b>: Waiting for current game to end<br />";
+			} else if (remainingCooldown > 1000) {
+				html += "<b>Starting in</b>: " + Tools.toDurationString(remainingCooldown) + "<br />";
+			} else {
+				html += "<b>Status</b>: Ready to start<br />";
+			}
+
+			html += "</div>";
+
+			if (privateHtml) {
+				tournamentRoom.sayPrivateUhtml(user, room.id + "-queued-tournament-game-" + format.id, html);
+			} else {
+				this.sayUhtml(room.id + "-queued-tournament-game-" + format.id, html, tournamentRoom);
+			}
+		},
+		aliases: ['ntg', 'nexttourgame', 'queuedtournamentgame', 'nexttournamentgameprivate', 'ntgprivate'],
+		pmSyntax: ["[room]"],
+		description: ["displays information about the queued tournament game"],
+	},
 	createsearchchallenge: {
 		command(target, room, user, cmd) {
 			if (this.isPm(room)) return;
