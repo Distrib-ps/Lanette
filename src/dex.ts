@@ -14,7 +14,7 @@ import type {
 import type {
 	IAbility, IAbilityCopy, IFormat, IItem, IItemCopy, IMove, IMoveCopy, INature, IPokemon, IPokemonCopy,
 	IPokemonShowdownDex, IPokemonShowdownDexModule, IPokemonShowdownTagsModule, IPokemonShowdownValidator, IPokemonShowdownValidatorModule,
-	IPSFormat, ITagData, ITypeData, RuleTable, ValidatedRule
+	IPSFormat, IPSPokemon, ITagData, ITypeData, RuleTable, ValidatedRule
 } from './types/pokemon-showdown';
 import type { IParsedSmogonLink } from './types/tools';
 
@@ -1896,6 +1896,15 @@ export class Dex {
 		const formatDex = format.mod in this.dexes ? this.dexes[format.mod] : this;
 		const littleCup = ruleTable.has("littlecup");
 		const forceMonotype = ruleTable.has("forcemonotype") ? this.getExistingType(ruleTable.valueRules.get("forcemonotype")!).name : "";
+
+		const bannedSpeciesFilters: ((species: IPSPokemon) => boolean)[] = [];
+		for (const tag in this.pokemonShowdownTags) {
+			if (!this.pokemonShowdownTags[tag].speciesFilter) continue;
+			if (ruleTable.check('pokemontag:' + tag)) {
+				bannedSpeciesFilters.push(this.pokemonShowdownTags[tag].speciesFilter!);
+			}
+		}
+
 		const usablePokemon: string[] = [];
 		for (const key of formatDex.getData().pokemonKeys) {
 			const formes = formatDex.getFormes(formatDex.getExistingPokemon(key));
@@ -1904,6 +1913,17 @@ export class Dex {
 				const pokemon = formatDex.pokemonShowdownDex.species.get(forme);
 
 				if (forceMonotype && !pokemon.types.includes(forceMonotype)) continue;
+
+				if (bannedSpeciesFilters.length) {
+					let bannedByTag = false;
+					for (const filter of bannedSpeciesFilters) {
+						if (filter(pokemon)) {
+							bannedByTag = true;
+							break;
+						}
+					}
+					if (bannedByTag) continue;
+				}
 
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				const set: Dict<any> = {};
@@ -1961,6 +1981,11 @@ export class Dex {
 				if (!usableMove) continue;
 
 				if (validator.checkSpecies(set, pokemon, pokemon, {})) continue;
+
+				if (format.id.includes('metronomebattle')) {
+					if (pokemon.types.includes('Steel')) continue;
+					if (pokemon.bst > 625) continue;
+				}
 
 				if (littleCup && !(pokemon.tier === 'LC' || formatDex.isPseudoLCPokemon(pokemon))) continue;
 

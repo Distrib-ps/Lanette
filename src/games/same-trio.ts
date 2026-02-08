@@ -12,11 +12,11 @@ class SameTrio extends SameBattleEliminationTournament {
 	startingTeamsLength = 3;
 	baseHtmlPageGameName = name;
 	htmlPageGameDescription = description;
-	battleFormatId = 'gen6battlespottriples';
+	battleFormatId = 'gen9triples';
 	battleFormatType: GameType = 'triples';
 
 	getRequiredCustomRules(): string[] {
-		return ['!!pickedteamsize=3', 'maxteamsize=3'];
+		return ['pickedteamsize=3', 'maxteamsize=3'];
 	}
 }
 

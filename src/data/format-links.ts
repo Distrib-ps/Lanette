@@ -9,7 +9,7 @@ export const formatLinks: Dict<IFormatDataLinks> = {
 		teams: 'https://www.smogon.com/forums/threads/3719248/',
 	},
 	'gen9ubers': {
-		teams: 'https://www.smogon.com/forums/threads/3719619/',
+		teams: 'https://www.smogon.com/forums/threads/sv-ubers-sample-teams.3736089//',
 	},
 	'gen9ou': {
 		teams: 'https://www.smogon.com/forums/threads/3712513/',

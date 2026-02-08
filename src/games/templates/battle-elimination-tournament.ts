@@ -167,9 +167,6 @@ export abstract class BattleEliminationTournament extends BattleElimination {
 				if (customRules.length) {
 					this.subRoom.setTournamentRules(customRules.join(","));
 
-					const customRuleInfo = Dex.getCustomRuleInfoDisplay(customRules);
-					if (customRuleInfo) this.subRoom.sayHtml(customRuleInfo);
-
 					this.pokedex = this.shuffle(this.pokedex);
 				}
 
@@ -204,6 +201,11 @@ export abstract class BattleEliminationTournament extends BattleElimination {
 	}
 
 	async onSignups(): Promise<void> {
+		const customRules = this.getCustomRules();
+		if (customRules.length) {
+			this.customRuleInfoDisplay = Dex.getCustomRuleInfoDisplay(customRules);
+		}
+
 		await super.onSignups();
 
 		this.debugLog("Original Pokedex size: " + this.pokedex.length);

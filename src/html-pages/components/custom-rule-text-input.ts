@@ -6,6 +6,8 @@ export interface ICustomRuleTextInputProps extends ITextInputProps {
 	noComplexBans?: boolean;
 }
 
+const COMPLEX_BAN_LIMIT_PLACEHOLDER = '\x01LIMIT\x01';
+
 export class CustomRuleTextInput extends TextInput {
 	componentId: string = 'custom-rule-text-input';
 
@@ -16,8 +18,13 @@ export class CustomRuleTextInput extends TextInput {
 		super(htmlPage, parentCommandPrefix, componentCommand, props);
 	}
 
+	submit(input: string): void {
+		// preserve ' > ' for complex ban limit syntax (e.g. "-ZU > 2") before parent strips HTML tag characters
+		super.submit(input.replace(/ > /g, COMPLEX_BAN_LIMIT_PLACEHOLDER));
+	}
+
 	onSubmit(input: string): void {
-		input = input.trim();
+		input = input.replace(new RegExp(COMPLEX_BAN_LIMIT_PLACEHOLDER, 'g'), ' > ').trim();
 		const parts = Dex.resolveCustomRuleAliases(input.split(','));
 		const validRules: string[] = [];
 		const invalidRules: string[] = [];

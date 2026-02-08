@@ -111,6 +111,7 @@ export abstract class BattleElimination extends ScriptedGame {
 	roomPokedexBanlist: string[] = [];
 	roomFormatRules: string[] = [];
 	rulesHtml: string = "";
+	customRuleInfoDisplay: string = "";
 	sameRoomSubRoom: boolean = false;
 	sharedTeams: boolean = false;
 	spectatorPlayers = new Set<Player>();
@@ -1375,6 +1376,7 @@ export abstract class BattleElimination extends ScriptedGame {
 	getSignupsDescriptionHtml(): string {
 		let html = "<div class='infobox'><b>" + Users.self.name + " is hosting a " + this.name + " tournament!</b>";
 		if (this.htmlPageGameDescription) html += "<br />" + this.htmlPageGameDescription;
+		if (this.customRuleInfoDisplay) html += "<br /><br />" + this.customRuleInfoDisplay;
 		html += "<br /><br />";
 		if (this.started) {
 			html += "(the tournament has started)";
