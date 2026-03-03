@@ -379,6 +379,16 @@ export class Tournament extends Activity {
 
 	forceEnd(): void {
 		if (this.timeout) clearTimeout(this.timeout);
+
+		if (Config.allowTournaments && Config.allowTournaments.includes(this.room.id)) {
+			const database = Storage.getDatabase(this.room);
+			if (!database.pastTournaments) database.pastTournaments = [];
+			database.pastTournaments.unshift({inputTarget: this.format.inputTarget, name: this.format.name, time: Date.now()});
+			while (database.pastTournaments.length > 8) {
+				database.pastTournaments.pop();
+			}
+		}
+
 		this.deallocate(true);
 	}
 
