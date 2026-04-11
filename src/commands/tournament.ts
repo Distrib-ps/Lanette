@@ -553,6 +553,69 @@ export const commands: BaseCommandDefinitions = {
 		syntax: ["[game]"],
 		description: ["displays the last time the given tournament format was played"],
 	},
+	leastplayedtournaments: {
+		command(target, room, user) {
+			const targets = target.split(',');
+			let tournamentRoom: Room;
+			if (this.isPm(room)) {
+				const targetRoom = Rooms.search(targets[0]);
+				if (!targetRoom) return this.sayError(['invalidBotRoom', targets[0]]);
+				if (!Config.allowTournaments || !Config.allowTournaments.includes(targetRoom.id)) {
+					return this.sayError(['disabledTournamentFeatures', targetRoom.title]);
+				}
+				tournamentRoom = targetRoom;
+				targets.shift();
+			} else {
+				if (!user.hasRank(room, 'star') && !Tournaments.canCreateTournament(room, user)) return;
+				if (!Config.allowTournaments || !Config.allowTournaments.includes(room.id)) {
+					return this.sayError(['disabledTournamentFeatures', room.title]);
+				}
+				tournamentRoom = room;
+			}
+
+			const option = Tools.toId(targets[0]);
+			const randsOnly = option === 'rands' || option === 'random' || option === 'randoms';
+
+			const database = Storage.getDatabase(tournamentRoom);
+			const lastFormatTimes = database.lastTournamentFormatTimes || {};
+			const currentGenMod = Dex.getCurrentGenMod();
+			const now = Date.now();
+
+			const formatData: {name: string; time: number}[] = [];
+			for (const key of Dex.getData().formatKeys) {
+				const format = Dex.getExistingFormat(key);
+				if (!format.tournamentPlayable || format.mod !== currentGenMod) continue;
+				if (randsOnly && !format.team) continue;
+				if (!randsOnly && format.team) continue;
+				if (!(format.id in lastFormatTimes)) continue;
+
+				formatData.push({
+					name: format.name,
+					time: lastFormatTimes[format.id],
+				});
+			}
+
+			if (!formatData.length) return this.say("No " + (randsOnly ? "random " : "") + "tournament format history found.");
+
+			formatData.sort((a, b) => a.time - b.time);
+
+			const count = Math.min(formatData.length, 15);
+			const names: string[] = [];
+			for (let i = 0; i < count; i++) {
+				let duration = now - formatData[i].time;
+				if (duration < 1000) duration = 1000;
+				names.push("<b>" + formatData[i].name + "</b> <i>(" +
+					Tools.toDurationString(duration) + " ago)</i>");
+			}
+
+			this.sayHtml("<b>Least played " + (randsOnly ? "random " : "") + "tournaments</b>:<br />" +
+				names.join(", "), tournamentRoom);
+		},
+		aliases: ['leastplayedtours', 'lptours', 'lpt'],
+		pmSyntax: ["[room], {rands}"],
+		syntax: ["{rands}"],
+		description: ["displays the least recently played tournament formats, optionally filtered to random formats with 'rands'"],
+	},
 	usercreatedformats: {
 		command(target, room, user) {
 			if (!this.isPm(room) && !user.hasRank(room, 'star')) return;

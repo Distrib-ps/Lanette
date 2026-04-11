@@ -103,6 +103,9 @@ export function load(config: typeof Config): typeof Config {
 	if (config.randomTournamentCustomRules) {
 		config.randomTournamentCustomRules = objectKeysToRoomId(stringArrayObjectToIds(config.randomTournamentCustomRules));
 	}
+		if (config.excludedRandomTournamentFormats) {
+		config.excludedRandomTournamentFormats = objectKeysToRoomId(stringArrayObjectToIds(config.excludedRandomTournamentFormats));
+	}
 	if (config.displayTournamentFormatInfo) config.displayTournamentFormatInfo = arrayToRoomIds(config.displayTournamentFormatInfo);
 	if (config.displayUnrankedTournamentResults) {
 		config.displayUnrankedTournamentResults = arrayToRoomIds(config.displayUnrankedTournamentResults);

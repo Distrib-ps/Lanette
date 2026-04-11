@@ -159,6 +159,11 @@ export let unrankedTournamentFormats: Dict<string[]> = {};
 export let randomTournamentCustomRules: Dict<string[]> = {};
 
 /**
+ * For each room in the object, a list of formats (full name including gen) to exclude from randomly selected tournaments
+ */
+export let excludedRandomTournamentFormats: Dict<string[]> = {};
+
+/**
  * A list of rooms (roomids) where randomly selected tournaments will use saved custom formats
  */
 export let customFormatRandomTournaments: string[] = [];

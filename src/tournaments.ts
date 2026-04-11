@@ -828,12 +828,16 @@ export class Tournaments {
 			formatsPool = Dex.getData().formatKeys;
 		}
 
+		const excludedFormats = Config.excludedRandomTournamentFormats && room.id in Config.excludedRandomTournamentFormats ?
+			Config.excludedRandomTournamentFormats[room.id] : [];
+
 		const currentGenMod = Dex.getCurrentGenMod();
 		const validFormats: IFormat[] = [];
 		for (const i of formatsPool) {
 			const format = this.getFormat(i, room);
 			if (!format || !format.tournamentPlayable || (officialFormat && officialFormat.id === format.id) ||
-				(format.unranked && !allowUnranked) || (format.mod !== currentGenMod && !allowPastGen)) continue;
+				(format.unranked && !allowUnranked) || (format.mod !== currentGenMod && !allowPastGen) ||
+				excludedFormats.includes(format.id)) continue;
 
 			if (quickFormat) {
 				if (!format.quickFormat) continue;
