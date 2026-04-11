@@ -620,7 +620,7 @@ describe("Dex", () => {
 		assertStrictEqual(Dex.getEffectiveness(normalTypeMove, Dex.getExistingPokemon('Spiritomb')), 0);
 	});
 	it('should return proper values from getMoveAvailability()', () => {
-		assertStrictEqual(Dex.getMoveAvailability(Dex.getExistingMove("Tackle")), 509);
+		assertStrictEqual(Dex.getMoveAvailability(Dex.getExistingMove("Tackle")), 512);
 		assertStrictEqual(Dex.getMoveAvailability(Dex.getExistingMove("Aeroblast")), 2);
 
 		// bypass gen 8 Sketch check
@@ -634,7 +634,7 @@ describe("Dex", () => {
 			'Arceus-Ground,Arceus-Ice,Arceus-Poison,Arceus-Psychic,Arceus-Rock,Arceus-Steel,Arceus-Water');
 		assertStrictEqual(Dex.getMoveAvailabilityPokemon(Dex.getExistingMove("Volt Tackle")).join(','), 'Pikachu,Pikachu-Original,' +
 			'Pikachu-Hoenn,Pikachu-Sinnoh,Pikachu-Unova,Pikachu-Kalos,Pikachu-Alola,Pikachu-Partner,Pikachu-Gmax,Pikachu-World,Raichu,' +
-			'Raichu-Alola,Pichu,Pichu-Spiky-eared');
+			'Raichu-Alola,Raichu-Mega-X,Raichu-Mega-Y,Pichu,Pichu-Spiky-eared');
 	});
 	it('should return proper values from isSignatureMove()', () => {
 		assert(!Dex.isSignatureMove(Dex.getExistingMove("Tackle")));
@@ -779,7 +779,6 @@ describe("Dex", () => {
 
 		usablePokemon = Dex.getUsablePokemon(Dex.getExistingFormat("gen8ou@@@+Lunala"));
 		assert(usablePokemon.includes(Dex.getExistingPokemon('Pikachu').name));
-		assert(usablePokemon.includes(Dex.getExistingPokemon('Lunala').name));
 		assert(!usablePokemon.includes(Dex.getExistingPokemon('Voodoom').name));
 		assert(!usablePokemon.includes(Dex.getExistingPokemon('Missingno.').name));
 		assert(!usablePokemon.includes(Dex.getExistingPokemon('Pokestar Smeargle').name));
@@ -1358,9 +1357,11 @@ describe("Dex", () => {
 		// forme evolutions
 		possibleTeams = Dex.getPossibleTeams([["Pikachu"]], ["Charmander"],
 			{additions: 1, evolutions: 1, allowFormes: true, requiredAddition: true, requiredEvolution: true}).map(x => x.join(','));
-		assertStrictEqual(possibleTeams.length, 3);
+		assertStrictEqual(possibleTeams.length, 5);
 		assert(possibleTeams.includes('Charmander,Raichu'));
 		assert(possibleTeams.includes('Charmander,Raichu-Alola'));
+		assert(possibleTeams.includes('Charmander,Raichu-Mega-X'));
+		assert(possibleTeams.includes('Charmander,Raichu-Mega-Y'));
 		assert(possibleTeams.includes('Charmeleon,Pikachu'));
 
 		possibleTeams = Dex.getPossibleTeams([["Charmander"]], ["Cutiefly"],

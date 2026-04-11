@@ -289,6 +289,7 @@ export interface IDatabase {
 	pastUserHostedGames?: IPastGame[];
 	queuedScriptedGame?: IQueuedScriptedGame;
 	queuedTournament?: IQueuedTournament;
+	queuedTournamentGame?: IQueuedTournamentGame;
 	queuedTournamentGames?: IQueuedTournamentGame[];
 	randomTournamentFormats?: string[];
 	roomSampleTeamsLink?: string;

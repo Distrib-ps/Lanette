@@ -314,6 +314,7 @@ export abstract class Activity {
 		return room === user;
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	isPmActivity(room: Room | User): room is User {
 		return this.pm;
 	}

@@ -1901,7 +1901,7 @@ export class Dex {
 		for (const tag in this.pokemonShowdownTags) {
 			if (!this.pokemonShowdownTags[tag].speciesFilter) continue;
 			if (ruleTable.check('pokemontag:' + tag)) {
-				bannedSpeciesFilters.push(this.pokemonShowdownTags[tag].speciesFilter!);
+				bannedSpeciesFilters.push(this.pokemonShowdownTags[tag].speciesFilter);
 			}
 		}
 
