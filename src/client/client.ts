@@ -287,7 +287,7 @@ export class Client {
 	}
 
 	getUserAttributionHtml(text: string): string {
-		return '<div style="float:right;color:#888;font-size:8pt">[' + text + ']</div><div style="clear:both"></div>';
+		return '<div class="gray" style="float:right;font-size:8pt">[' + text + ']</div><div style="clear:both"></div>';
 	}
 
 	getListenerHtml(html: string, noAttribution?: boolean): string {
