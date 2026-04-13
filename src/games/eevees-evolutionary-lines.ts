@@ -17,9 +17,16 @@ class EeveesEvolutionaryLines extends QuestionAndAnswer {
 			const evolutionLines = Dex.getEvolutionLines(pokemon);
 			if (evolutionLines.length === 1 && evolutionLines[0].length === 1) continue;
 
-			const key = evolutionLines.map(x => x.join(",")).join("|");
-			hints[key] = [pokemon.name];
-			hintKeys.push(key);
+			const key = evolutionLines.map(x => {
+				const evoLine = structuredClone(x);
+				evoLine.shift();
+				return evoLine.join(",");
+			}).join("|");
+			if (!hints[key]) {
+				hints[key] = [];
+				hintKeys.push(key);
+			}
+			hints[key].push(pokemon.name);
 		}
 
 		this.cachedData.hintAnswers = hints;
@@ -27,13 +34,17 @@ class EeveesEvolutionaryLines extends QuestionAndAnswer {
 	}
 
 	async onSetGeneratedHint(hintKey: string): Promise<void> {
-		const evolutionLines = hintKey.split("|").map(x => x.split(","));
+		const evolutionLines = [];
+		for (const base of this.answers) {
+			evolutionLines.push(...hintKey.split("|").map(x => (base + "," + x).split(",")));
+		}
 		let hiddenLine = this.sampleOne(evolutionLines);
 		while (hiddenLine.length === 1) {
 			hiddenLine = this.sampleOne(evolutionLines);
 		}
 
-		const branchEvolution = evolutionLines.length > 1;
+		const convergingEvolution = this.answers.length > 1;
+		const branchEvolution = evolutionLines.length > 1 && !convergingEvolution;
 		const lineHints: string[] = [];
 		for (const line of evolutionLines) {
 			if (this.pokemonGifHints) {
@@ -47,7 +58,7 @@ class EeveesEvolutionaryLines extends QuestionAndAnswer {
 
 			if (line === hiddenLine) {
 				let hidden = this.sampleOne(line);
-				while (branchEvolution && hidden === line[0]) {
+				while ((branchEvolution && hidden === line[0]) || (convergingEvolution && hidden !== line[0])) {
 					hidden = this.sampleOne(line);
 				}
 
