@@ -795,7 +795,7 @@ export class Dex {
 		const pokedex: IPokemon[] = [];
 		for (const i of this.getData().pokemonKeys) {
 			const species = this.getExistingPokemon(i);
-			if (species.tier.startsWith("CAP")) continue;
+			if (species.isNonstandard === "CAP") continue;
 
 			if (
 				species.gen <= this.gen &&
