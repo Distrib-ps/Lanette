@@ -98,6 +98,14 @@ class AmbipomsTossups extends QuestionAndAnswer {
 				this.setTimeout(() => void this.nextRound(), 5000);
 			});
 			this.say(text);
+			
+			if (!this.format.mode) {
+				this.inactiveRounds++;
+				if (this.inactiveRounds === this.inactiveRoundLimit) {
+					this.inactivityEnd();
+					return;
+				}
+			}
 		} else {
 			this.setTimeout(() => void this.nextRound(), this.updateHintTime);
 		}

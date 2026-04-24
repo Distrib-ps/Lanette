@@ -83,6 +83,15 @@ class SmearglesMysteryMoves extends QuestionAndAnswer {
 					this.end();
 					return;
 				}
+
+				if (!this.format.mode) {
+					this.inactiveRounds++;
+					if (this.inactiveRounds === this.inactiveRoundLimit) {
+						this.inactivityEnd();
+						return;
+					}
+				}
+
 				this.setTimeout(() => void this.nextRound(), 5000);
 			});
 			this.say(text);

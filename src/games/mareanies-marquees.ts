@@ -86,6 +86,15 @@ class MareaniesMarquees extends QuestionAndAnswer {
 				this.end();
 				return;
 			}
+
+			if (!this.format.mode) {
+				this.inactiveRounds++;
+				if (this.inactiveRounds === this.inactiveRoundLimit) {
+					this.inactivityEnd();
+					return;
+				}
+			}
+
 			void this.nextRound();
 			return;
 		}

@@ -118,6 +118,15 @@ class ZygardesOrders extends QuestionAndAnswer {
 					this.end();
 					return;
 				}
+
+				if (!this.format.mode) {
+					this.inactiveRounds++;
+					if (this.inactiveRounds === this.inactiveRoundLimit) {
+						this.inactivityEnd();
+						return;
+					}
+				}
+
 				this.setTimeout(() => void this.nextRound(), 5 * 1000);
 			});
 			this.say(text);
