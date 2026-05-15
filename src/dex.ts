@@ -259,7 +259,7 @@ const locationTypeNames: LocationTypeNames = {
 };
 
 type Regions = readonly RegionName[];
-const regions: Regions = ['kanto', 'johto', 'hoenn', 'sinnoh', 'unova', 'kalos', 'alola', 'galar', 'hisui', 'paldea'];
+const regions: Regions = ['kanto', 'johto', 'hoenn', 'sinnoh', 'unova', 'kalos', 'alola', 'galar', 'hisui', 'paldea', 'kitakami', 'champions'];
 
 type RegionNames = Readonly<KeyedDict<RegionName, string>>;
 const regionNames: RegionNames = {
@@ -273,6 +273,8 @@ const regionNames: RegionNames = {
 	galar: "Galar",
 	hisui: "Hisui",
 	paldea: "Paldea",
+	kitakami: "Kitakami",
+	champions: "Champions",
 };
 
 export class Dex {

@@ -78,4 +78,6 @@ export const badges: BadgeData = {
 	],
 	hisui: [],
 	paldea: [],
+	kitakami: [],
+	champions: [],
 };

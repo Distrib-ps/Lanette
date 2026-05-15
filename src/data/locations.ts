@@ -451,4 +451,20 @@ export const locations: LocationData = {
 			"Poco Path",
 		],
 	},
+	kitakami: {
+		city: [],
+		town: [],
+		cave: [],
+		forest: [],
+		mountain: [],
+		other: [],
+	},
+	champions: {
+		city: [],
+		town: [],
+		cave: [],
+		forest: [],
+		mountain: [],
+		other: [],
+	},
 };
