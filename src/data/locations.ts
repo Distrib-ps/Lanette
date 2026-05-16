@@ -453,11 +453,34 @@ export const locations: LocationData = {
 	},
 	kitakami: {
 		city: [],
-		town: [],
-		cave: [],
-		forest: [],
-		mountain: [],
-		other: [],
+		town: [
+			"Mossui",
+		],
+		cave: [
+			"Chilling Waterhead",
+			"Oni's Maw",
+		],
+		forest: [
+			"Timeless Woods",
+		],
+		mountain: [
+			"Oni Mountain",
+		],
+		other: [
+			"Apple Hills",
+			"Crystal Pool",
+			"Dreaded Den",
+			"Fellhorn Gorge",
+			"Infernal Pass",
+			"Kitakami Hall",
+			"Kitakami Road",
+			"Kitakami Wilds",
+			"Loyalty Plaza",
+			"Mossfell Confluence",
+			"Paradise Barrens",
+			"Reveler's Road",
+			"Wistful Fields",
+		],
 	},
 	champions: {
 		city: [],
