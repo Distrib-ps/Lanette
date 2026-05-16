@@ -558,6 +558,12 @@ const commands: GameCommandDefinitions<Vote> = {
 		command(target, room, user, cmd) {
 			if (!this.canVote) return false;
 
+			const userData = user.rooms.get(this.room);
+			if (userData && userData.rank === Client.getGroupSymbols().muted) {
+				user.say("You cannot vote while you are muted.");
+				return false;
+			}
+
 			const player = this.createPlayer(user) || this.players[user.id];
 			const anonymous = cmd === PM_VOTE_COMMAND;
 			if (anonymous && !this.isPm(room, user)) {
