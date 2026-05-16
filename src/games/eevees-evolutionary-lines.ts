@@ -22,6 +22,7 @@ class EeveesEvolutionaryLines extends QuestionAndAnswer {
 				evoLine.shift();
 				return evoLine.join(",");
 			}).join("|");
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			if (!hints[key]) {
 				hints[key] = [];
 				hintKeys.push(key);
