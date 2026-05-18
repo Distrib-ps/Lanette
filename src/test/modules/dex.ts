@@ -1451,7 +1451,7 @@ describe("Dex", () => {
 		const abilities = dex.getAbilitiesList().map(x => x.name);
 		const items = dex.getItemsList().map(x => x.name);
 		const moves = dex.getMovesList().map(x => x.name);
-		const pokemon = dex.getPokemonList().map(x => x.name);
+		const pokemon = dex.getPokemonList('obtainable').map(x => x.name);
 
 		assert(abilities.length);
 		assert(items.length);
@@ -1487,7 +1487,7 @@ describe("Dex", () => {
 		// past gen
 
 		dex = Dex.getDex("gen1");
-		assert(!dex.getPokemonList().map(x => x.name).includes(dex.getExistingPokemon('Missingno.').name));
+		assert(!dex.getPokemonList('obtainable').map(x => x.name).includes(dex.getExistingPokemon('Missingno.').name));
 	});
 	it('should have hex colors for all relevant Pokemon and move data', () => {
 		for (const i of Dex.getData().pokemonKeys) {

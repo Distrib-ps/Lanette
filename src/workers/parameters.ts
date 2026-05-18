@@ -92,6 +92,7 @@ export class ParametersWorker extends WorkerBase<IParametersWorkerData, Paramete
 
 		const currentGen = Dex.getGen();
 		for (let gen = 1; gen <= currentGen; gen++) {
+			const dexType = gen === currentGen ? 'nationaldex' : 'obtainable';
 			const moves = Games.getMovesList(undefined, gen);
 			const movesList: IMove[] = [];
 			for (const move of moves) {
@@ -99,7 +100,7 @@ export class ParametersWorker extends WorkerBase<IParametersWorkerData, Paramete
 			}
 			data.moveLists[gen] = movesList;
 
-			const pokemon = Games.getPokemonList({gen});
+			const pokemon = Games.getPokemonList({dexType, gen});
 			const allPossibleMoves: Dict<readonly string[]> = {};
 			const evolutionLines: Dict<readonly string[][]> = {};
 			const pokemonList: IPokemon[] = [];

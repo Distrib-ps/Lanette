@@ -300,6 +300,7 @@ export class Dex {
 	private readonly effectivenessCache: Dict<Dict<number>> = Object.create(null);
 	private readonly evolutionLinesCache: Dict<string[][]> = Object.create(null);
 	private readonly evolutionLinesFormesCache: Dict<Dict<string[][]>> = Object.create(null);
+	private expandedDexPokemonList: readonly IPokemon[] | null = null;
 	private readonly immunityCache: Dict<Dict<boolean>> = Object.create(null);
 	private readonly inverseResistancesCache: Dict<string[]> = Object.create(null);
 	private readonly inverseWeaknessesCache: Dict<string[]> = Object.create(null);
@@ -787,11 +788,17 @@ export class Dex {
 	}
 
 	/** Returns a list of Pokemon that can be found in /ds or /nds */
-	getPokemonList(nationalDex?: boolean): readonly IPokemon[] {
-		if (nationalDex) {
-			if (this.nationalDexPokemonList) return this.nationalDexPokemonList;
-		} else {
+	getPokemonList(mode?: string): readonly IPokemon[] {
+		const exclusions = ["Custom", "Glitch", "Pokestar"];
+		if (mode === 'obtainable') {
 			if (this.pokemonList) return this.pokemonList;
+		} else if (mode === 'nationaldex') {
+			if (this.nationalDexPokemonList) return this.nationalDexPokemonList;
+			exclusions.push("Future");
+		} else if (!mode || mode === 'expandeddex') {
+			if (this.expandedDexPokemonList) return this.expandedDexPokemonList;
+		} else {
+			throw new Error("Unrecognized dex mode " + mode);
 		}
 
 		const pokedex: IPokemon[] = [];
@@ -803,9 +810,9 @@ export class Dex {
 				species.gen <= this.gen &&
 				(
 					(
-						nationalDex &&
+						mode !== 'obtainable' &&
 						species.isNonstandard &&
-						!["Custom", "Glitch", "Pokestar", "Future"].includes(species.isNonstandard)
+						!exclusions.includes(species.isNonstandard)
 					) ||
 					(species.tier !== 'Unreleased' && species.tier !== 'Illegal')
 				)
@@ -814,10 +821,12 @@ export class Dex {
 			}
 		}
 
-		if (nationalDex) {
+		if (mode === 'obtainable') {
+			this.pokemonList = pokedex;
+		} else if (mode === 'nationaldex') {
 			this.nationalDexPokemonList = pokedex;
 		} else {
-			this.pokemonList = pokedex;
+			this.expandedDexPokemonList = pokedex;
 		}
 
 		return pokedex;

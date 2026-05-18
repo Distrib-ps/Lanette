@@ -21,7 +21,7 @@ class GalladesAbilityTest extends QuestionAndAnswer {
 		const hints: Dict<string[]> = {};
 		const hintKeys: string[] = [];
 
-		for (const pokemon of Games.getPokemonList()) {
+		for (const pokemon of Games.getPokemonList({dexType: 'nationaldex'})) {
 			const abilities: string[] = [];
 			const hiddenSpecialAbilities: string[] = [];
 			for (const i in pokemon.abilities) {

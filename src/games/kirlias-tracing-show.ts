@@ -17,7 +17,7 @@ class KirliasTracingShow extends QuestionAndAnswer {
 		const hints: Dict<string[]> = {};
 		const hintKeys: string[] = [];
 
-		for (const pokemon of Games.getPokemonList()) {
+		for (const pokemon of Games.getPokemonList({dexType: 'nationaldex'})) {
 			const abilities: string[] = [];
 			for (const ability in pokemon.abilities) {
 				// @ts-expect-error

@@ -34,9 +34,9 @@ type UserHostedFormats = Dict<IUserHostedComputed>;
 type GameCategoryNames = Readonly<KeyedDict<GameCategory, string>>;
 
 interface IPokemonListOptions {
+	dexType?: string;
 	filter?: (pokemon: IPokemon) => boolean;
 	gen?: number;
-	obtainable?: boolean;
 }
 
 interface ICreateGameOptions {
@@ -176,6 +176,7 @@ export class Games {
 
 	/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 	private abilitiesLists: Dict<readonly IAbility[]> = Object.create(null);
+	private expandedDexPokemonLists: Dict<readonly IPokemon[]> = Object.create(null);
 	private itemsLists: Dict<readonly IItem[]> = Object.create(null);
 	private movesLists: Dict<readonly IMove[]> = Object.create(null);
 	private nationalDexPokemonLists: Dict<readonly IPokemon[]> = Object.create(null);
@@ -1694,23 +1695,27 @@ export class Games {
 		if (!options.gen) options.gen = currentGen;
 
 		const mod = 'gen' + options.gen;
-		if ((options.obtainable && !Object.prototype.hasOwnProperty.call(this.pokemonLists, mod)) ||
-			(!options.obtainable && !Object.prototype.hasOwnProperty.call(this.nationalDexPokemonLists, mod))) {
-			const baseList = Dex.getDex(mod).getPokemonList(!options.obtainable && options.gen === currentGen);
+		if ((options.dexType === 'obtainable' && !Object.prototype.hasOwnProperty.call(this.pokemonLists, mod)) ||
+			(options.dexType === 'nationaldex' && !Object.prototype.hasOwnProperty.call(this.nationalDexPokemonLists, mod)) ||
+			!Object.prototype.hasOwnProperty.call(this.expandedDexPokemonLists, mod)) {
+			const baseList = Dex.getDex(mod).getPokemonList(options.dexType || 'expandeddex');
 			const list: IPokemon[] = [];
 			for (const pokemon of baseList) {
 				if (!pokemon.name) continue;
 				list.push(pokemon);
 			}
 
-			if (options.obtainable) {
+			if (options.dexType === 'obtainable') {
 				this.pokemonLists[mod] = list;
-			} else {
+			} else if (options.dexType === 'nationaldex') {
 				this.nationalDexPokemonLists[mod] = list;
+			} else {
+				this.expandedDexPokemonLists[mod] = list;
 			}
 		}
 
-		const list = options.obtainable ? this.pokemonLists[mod] : this.nationalDexPokemonLists[mod];
+		const list = options.dexType === 'obtainable' ? this.pokemonLists[mod] :
+			options.dexType === 'nationaldex' ? this.nationalDexPokemonLists[mod] : this.expandedDexPokemonLists[mod];
 		if (!options.filter) return list;
 
 		const filteredList: IPokemon[] = [];

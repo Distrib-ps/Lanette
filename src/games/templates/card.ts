@@ -202,6 +202,7 @@ export abstract class CardGame<ActionCardsType extends object = Dict<IActionCard
 		this.deckPool = [];
 
 		const dex = this.getDex();
+		const dexType = this.requiredGen ? 'obtainable' : 'expandeddex';
 		let pokemonList: readonly IPokemon[];
 		if (this.hackmonsTypes) {
 			const list: IPokemon[] = [];
@@ -212,7 +213,7 @@ export abstract class CardGame<ActionCardsType extends object = Dict<IActionCard
 			}
 			pokemonList = list;
 		} else {
-			pokemonList = Games.getPokemonList({filter: pokemon => this.filterPokemonList(dex, pokemon), gen: this.requiredGen});
+			pokemonList = Games.getPokemonList({dexType, filter: pokemon => this.filterPokemonList(dex, pokemon), gen: this.requiredGen});
 		}
 
 		for (const pokemon of pokemonList) {

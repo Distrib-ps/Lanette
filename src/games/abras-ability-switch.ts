@@ -18,7 +18,7 @@ class AbrasAbilitySwitch extends QuestionAndAnswer {
 	// eslint-disable-next-line @typescript-eslint/require-await
 	static async loadData(): Promise<void> {
 		const abilities: Dict<string[]> = {};
-		for (const pokemon of Games.getPokemonList()) {
+		for (const pokemon of Games.getPokemonList({dexType: 'nationaldex'})) {
 			for (const i in pokemon.abilities) {
 				// @ts-expect-error
 				const ability = Dex.getExistingAbility(pokemon.abilities[i] as string);
