@@ -48,7 +48,7 @@ class DittosWhoAmI extends ScriptedGame {
 
 	// eslint-disable-next-line @typescript-eslint/require-await
 	async onStart(): Promise<void> {
-		this.pokemonList = this.shuffle(Games.getPokemonList({filter: x => {
+		this.pokemonList = this.shuffle(Games.getPokemonList({dexType: 'nationaldex', filter: x => {
 			const color = Tools.toId(x.color);
 			if (!this.colors.includes(color)) this.colors.push(color);
 
