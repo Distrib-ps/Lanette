@@ -2,7 +2,7 @@ import type { Player } from "../room-activity";
 import { ScriptedGame } from "../room-game-scripted";
 import type { GameCommandDefinitions, IGameFile } from "../types/games";
 
-const gen = 7;
+const gen = 9;
 const mod = 'gen' + gen;
 const data: {stones: string[]} = {
 	stones: [],
