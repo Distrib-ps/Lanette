@@ -98,10 +98,8 @@ class TrevenantsTrickOrTreat extends ScriptedGame {
 	onEnd(): void {
 		for (const i in this.players) {
 			if (this.players[i].eliminated || !this.points.has(this.players[i])) continue;
-			this.addBits(this.players[i], this.points.get(this.players[i])! / 2);
 			console.log(this.options.points + " " + this.points.get(this.players[i]));
 			if (this.options.points && (this.points.get(this.players[i]) || 0) >= this.options.points) {
-				console.log(Date.now() - this.startTime);
 				if (Date.now() - this.startTime < (TRICK_ZOOM_TIME + 10) * 1000) this.unlockAchievement(this.players[i], TrevenantsTrickOrTreat.achievements.trickzoom);
 			}
 		}

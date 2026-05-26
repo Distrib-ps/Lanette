@@ -24,14 +24,14 @@ class DedennesAbilityBlitz extends ScriptedGame {
 	inactiveRoundLimit: number = 5;
 	lightningStrike: Player | false | undefined;
 	longestAbilities: string[] = [];
-	maxPoints: number = 200;
+	maxPoints: number = 1000;
 	points = new Map<Player, number>();
 	prolixProdigies: Player[] | undefined;
 	revealTime: number = 5 * 1000;
 	roundAbilities = new Map<string, IRoundAbility>();
 	roundLimit: number = 20;
 	roundSelections = new Map<Player, IRoundAbility>();
-	roundTime: number = 10 * 1000;
+	roundTime: number = 3 * 1000;
 
 	// eslint-disable-next-line @typescript-eslint/require-await
 	static async loadData(): Promise<void> {
