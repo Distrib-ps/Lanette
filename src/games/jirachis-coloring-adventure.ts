@@ -1,18 +1,21 @@
+import type { Player } from "../room-activity";
 import type { IGameAchievement, IGameCachedData, IGameFile } from "../types/games";
 import { game as questionAndAnswerGame, QuestionAndAnswer } from './templates/question-and-answer';
 
-type AchievementNames = "rainbowdash" | "captainrainbowdash";
+type AchievementNames = "rainbowdash" | "captainrainbowdash" | "paletteperfectionist";
 
 class JirachisColoringAdventure extends QuestionAndAnswer {
 	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
 		"rainbowdash": {name: "Rainbow Dash", type: 'all-answers', bits: 1000, description: "get every answer in one game"},
 		"captainrainbowdash": {name: "Captain Rainbow Dash", type: 'all-answers-team', bits: 1000, mode: 'collectiveteam', 
 			description: "get every answer for your team and win the game"},
+		"paletteperfectionist": {name: "Palette Perfectionist", type: 'special', bits: 1000, description: "get one answer from every color"},
 	};
 	static cachedData: IGameCachedData = {};
 
 	allAnswersAchievement = JirachisColoringAdventure.achievements.rainbowdash;
 	allAnswersTeamAchievement = JirachisColoringAdventure.achievements.captainrainbowdash;
+	playerColors = new Map<Player, string[]>();
 
 	// eslint-disable-next-line @typescript-eslint/require-await
 	static async loadData(): Promise<void> {
@@ -34,6 +37,21 @@ class JirachisColoringAdventure extends QuestionAndAnswer {
 	// eslint-disable-next-line @typescript-eslint/require-await
 	async onSetGeneratedHint(hintKey: string): Promise<void> {
 		this.hint = "<b>Randomly generated color</b>: " + Tools.getTypeOrColorLabel(Tools.getPokemonColorHexCode(hintKey)!, hintKey);
+	}
+
+	onCorrectGuess(player: Player, guess: string): void {
+		const color = Dex.getPokemon(guess)?.color;
+		if (!this.playerColors.get(player)) this.playerColors.set(player, []);
+		const playerColors = this.playerColors.get(player);
+		if (color && playerColors && !playerColors.includes(color)) playerColors.push(color);
+	}
+
+	onEnd(): void {
+		this.playerColors.forEach((colors, player) => {
+			if (colors.length >= 10) this.unlockAchievement(player, JirachisColoringAdventure.achievements.paletteperfectionist);
+		})
+
+		super.onEnd();
 	}
 }
 

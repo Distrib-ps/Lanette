@@ -1,9 +1,10 @@
 import type { Player, PlayerTeam } from "../room-activity";
 import { ScriptedGame } from "../room-game-scripted";
-import type { GameCommandDefinitions, IGameFile } from "../types/games";
+import type { GameCommandDefinitions, IGameAchievement, IGameFile } from "../types/games";
 import type { IPokemon } from "../types/pokemon-showdown";
 import type { IHexCodeData } from "../types/tools";
 
+type AchievementNames = "goalie" | "sharpshooter";
 type TeamIds = 'red' | 'blue';
 
 const data: {pokemon: string[]} = {
@@ -16,15 +17,23 @@ const mapSymbols: {player: string; empty: string} = {
 	empty: "O",
 };
 
+const GOALIE_THRESHOLD = 8;
+const SHARPSHOOTER_THRESHOLD = 4;
 const MAX_REMATCHES = 2;
 const HIDE_COMMAND = "hide";
 
 class DragapultsDangerZone extends ScriptedGame {
+	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"goalie": {name: "Goalie", type: 'special', bits: 1000, description: "defend successfully " + GOALIE_THRESHOLD + " times"},
+		"sharpshooter": {name: "Sharpshooter", type: 'special', bits: 1000, description: "eliminate " + SHARPSHOOTER_THRESHOLD + " or more players in one game"},
+	}
+
 	canFire: boolean = false;
 	canHide: boolean = false;
 	canSelect: boolean = false;
 	columnLetters: string[] = letters;
 	currentTeam: TeamIds = 'red';
+	eliminations = new Map<Player, number>();
 	gridSize: number = 3;
 	lastFiredLocation: string = '';
 	matchupPlayers: Player[] = [];
@@ -291,7 +300,12 @@ class DragapultsDangerZone extends ScriptedGame {
 					if (!player.eliminated) earnings *= 2;
 
 					const matchupsWon = this.matchupsWon.get(player);
-					if (matchupsWon) earnings += matchupsWon * 50;
+					const eliminations = this.eliminations.get(player) || 0;
+					if (matchupsWon) {
+						earnings += matchupsWon * 50;
+						if (matchupsWon >= GOALIE_THRESHOLD) this.unlockAchievement(player, DragapultsDangerZone.achievements.goalie);
+						if (eliminations >= SHARPSHOOTER_THRESHOLD) this.unlockAchievement(player, DragapultsDangerZone.achievements.sharpshooter);
+					}
 
 					this.addBits(player, earnings);
 				}
@@ -300,8 +314,11 @@ class DragapultsDangerZone extends ScriptedGame {
 				for (const player of losingTeam.players) {
 					if (!this.playerLocations.has(player)) continue;
 					const matchupsWon = this.matchupsWon.get(player);
+					const eliminations = this.eliminations.get(player) || 0;
 					if (matchupsWon) {
 						this.addBits(player, matchupsWon * 50);
+						if (matchupsWon >= GOALIE_THRESHOLD) this.unlockAchievement(player, DragapultsDangerZone.achievements.goalie);
+						if (eliminations >= SHARPSHOOTER_THRESHOLD) this.unlockAchievement(player, DragapultsDangerZone.achievements.sharpshooter);
 					}
 				}
 			}
@@ -313,10 +330,12 @@ class DragapultsDangerZone extends ScriptedGame {
 			}
 
 			for (const i in this.players) {
-				if (this.players[i] === winner) continue;
 				const matchupsWon = this.matchupsWon.get(this.players[i]);
+				const eliminations = this.eliminations.get(this.players[i]) || 0;
 				if (matchupsWon) {
-					this.addBits(this.players[i], matchupsWon * 50);
+					if (this.players[i] !== winner) this.addBits(this.players[i], matchupsWon * 50);
+					if (matchupsWon >= GOALIE_THRESHOLD) this.unlockAchievement(this.players[i], DragapultsDangerZone.achievements.goalie);
+					if (eliminations >= SHARPSHOOTER_THRESHOLD) this.unlockAchievement(this.players[i], DragapultsDangerZone.achievements.sharpshooter);
 				}
 			}
 		}
@@ -442,6 +461,8 @@ class DragapultsDangerZone extends ScriptedGame {
 			this.eliminatePlayer(loser);
 			this.addRevealedLocation(this.playerLocations.get(loser)!);
 			this.removePlayerFromOrder(loser);
+			const eliminations = this.eliminations.get(winner) || 0;
+			this.eliminations.set(winner, eliminations + 1);
 		}
 
 		const matchupsWon = this.matchupsWon.get(winner) || 0;

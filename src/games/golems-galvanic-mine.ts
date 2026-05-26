@@ -1,6 +1,6 @@
 import type { Player } from "../room-activity";
 import { ScriptedGame } from "../room-game-scripted";
-import type { GameCommandDefinitions, IGameFile } from "../types/games";
+import type { GameCommandDefinitions, IGameAchievement, IGameFile } from "../types/games";
 
 const gen = 9;
 const mod = 'gen' + gen;
@@ -8,10 +8,16 @@ const data: {stones: string[]} = {
 	stones: [],
 };
 
+type AchievementNames = "primeminester";
+
 class GolemsGalvanicMine extends ScriptedGame {
+	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"primeminester": {name: "Prime Minester", type: 'first', bits: 1000, description: "answer first every round"},
+	}
 	canMine: boolean = false;
 	inactiveRoundLimit: number = 5;
 	points = new Map<Player, number>();
+	primeMinester: Player | false | undefined;
 	roundMines = new Map<Player, number>();
 	roundStones: Dict<number> = {};
 	roundTime: number = 7000;
@@ -35,6 +41,7 @@ class GolemsGalvanicMine extends ScriptedGame {
 				if (this.inactiveRounds) this.inactiveRounds = 0;
 
 				let reachedMaxPoints: boolean | undefined;
+				let firstMine = true;
 				this.roundMines.forEach((value, player) => {
 					let points = this.points.get(player) || 0;
 					points += value;
@@ -43,6 +50,15 @@ class GolemsGalvanicMine extends ScriptedGame {
 						this.winners.set(player, points);
 					}
 					this.points.set(player, points);
+
+					if (firstMine) {
+						if (this.primeMinester === undefined) {
+							this.primeMinester = player;
+						} else {
+							if (this.primeMinester && this.primeMinester !== player) this.primeMinester = false;
+						}
+						firstMine = false;
+					}
 				});
 
 				if (reachedMaxPoints) {
@@ -95,6 +111,7 @@ class GolemsGalvanicMine extends ScriptedGame {
 
 	onEnd(): void {
 		if (this.winners.size) this.convertPointsToBits(500 / this.options.points!, 100 / this.options.points!);
+		if (this.primeMinester) this.unlockAchievement(this.primeMinester, GolemsGalvanicMine.achievements.primeminester);
 		this.announceWinners();
 	}
 

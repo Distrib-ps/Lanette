@@ -1,16 +1,25 @@
 import type { Player } from "../room-activity";
 import { ScriptedGame } from "../room-game-scripted";
-import type { GameCommandDefinitions, IGameFile } from "../types/games";
+import type { GameCommandDefinitions, IGameAchievement, IGameFile } from "../types/games";
+
+type AchievementNames = "hesitantthievul" | "sugarrush";
 
 const maxPoints = 5;
 
 class ThievulsSweetThief extends ScriptedGame {
+	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"hesitantthievul": {name: "Hesitant Thievul", type: 'special', bits: 1000, repeatBits: 250, description: "only steal once per round and win"},
+		"sugarrush": {name: "Sugar Rush", type: 'special', bits: 1000, repeatBits: 250, description: "get all the sweets in one game"},
+	};
+
 	canLateJoin = true;
 	canSteal: boolean = false;
 	currentHolder: Player | null = null;
 	maxPlayers: number = 20;
 	points = new Map<Player, number>();
 	roundTimes: number[] = [7000, 8000, 9000, 10000];
+	steals = new Map<Player, number>();
+	sugarRush: Player | false | undefined;
 	winnerPointsToBits = 100;
 	loserPointsToBits = 25;
 
@@ -41,6 +50,11 @@ class ThievulsSweetThief extends ScriptedGame {
 					this.end();
 					return;
 				}
+				if (this.sugarRush === undefined) {
+					this.sugarRush = this.currentHolder;
+				} else if (this.sugarRush && this.sugarRush !== this.currentHolder) {
+					this.sugarRush = false;
+				}
 				this.currentHolder = null;
 			}
 
@@ -52,6 +66,10 @@ class ThievulsSweetThief extends ScriptedGame {
 
 	// eslint-disable-next-line @typescript-eslint/require-await
 	async onNextRound(): Promise<void> {
+		this.steals.forEach((steals, player) => {
+			if (steals < 2) this.steals.set(player, 0);
+		});
+
 		const remainingPlayerCount = this.getRemainingPlayerCount();
 		if (remainingPlayerCount < 2) {
 			return this.end();
@@ -85,6 +103,13 @@ class ThievulsSweetThief extends ScriptedGame {
 	}
 
 	onEnd(): void {
+		if (this.sugarRush) this.unlockAchievement(this.sugarRush, ThievulsSweetThief.achievements.sugarrush);
+		this.points.forEach((points, player) => {
+			if (points === maxPoints) {
+				if ((this.steals.get(player) || 0) < 2) this.unlockAchievement(player, ThievulsSweetThief.achievements.hesitantthievul);
+			}
+		});
+
 		this.convertPointsToBits();
 		this.announceWinners();
 	}
@@ -111,6 +136,9 @@ const commands: GameCommandDefinitions<ThievulsSweetThief> = {
 				player.sayPrivateHtml(this.players[id].name + " does not currently have the sweets!");
 				return false;
 			}
+
+			const steals = this.steals.get(player) || 0;
+			this.steals.set(player, steals + 1);
 
 			this.currentHolder = player;
 			return true;

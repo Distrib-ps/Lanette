@@ -1,8 +1,9 @@
 import type { Player } from '../room-activity';
 import { ScriptedGame } from '../room-game-scripted';
-import type { GameCommandDefinitions, IGameFile } from "../types/games";
+import type { GameCommandDefinitions, IGameAchievement, IGameFile } from "../types/games";
 import type { GameActionGames } from '../types/storage';
 
+type AchievementNames = "blackberry" | "greedy";
 type BerryType = 'Cheri' | 'Chesto' | 'Pecha' | 'Rawst' | 'Mystery';
 interface IBerryPile {
 	readonly name: BerryType;
@@ -11,12 +12,18 @@ interface IBerryPile {
 
 const GAME_ACTION_TYPE: GameActionGames = 'greedentsberrypiles';
 const GRAB_COMMAND = "grab";
+const GREEDY_THRESHOLD = 27;
 const RUN_COMMAND = "run";
 const ACTION_COMMANDS = [GRAB_COMMAND, RUN_COMMAND];
 
 const mysteryBerryAmount = 11;
 
 class GreedentsBerryPiles extends ScriptedGame {
+	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"blackberry": {name: "Blackberry", type: 'special', bits: 1000, description: "get a perfect forage in 3 rounds or more"},
+		"greedy": {name: "Greedy", type: 'special', bits: 250, description: "get " + GREEDY_THRESHOLD + " or more berries"},
+	}
+
 	berryPiles: IBerryPile[] = [];
 	canGrab: boolean = false;
 	canLateJoin: boolean = true;
@@ -25,6 +32,7 @@ class GreedentsBerryPiles extends ScriptedGame {
 	readonly maxSubGames: number = 5;
 	readonly maxBerryTotal: number = 21;
 	readonly minGreedentFirstForage: number = 17;
+	readonly perfectForages = new Map<Player, number>();
 	readonly perfectForageBonuses = new Map<Player, number>();
 	readonly playerBerryPiles = new Map<Player, IBerryPile[]>();
 	readonly playerTotals = new Map<Player, number>();
@@ -295,7 +303,9 @@ class GreedentsBerryPiles extends ScriptedGame {
 				const bonus = Math.floor(300 / perfectForages.length);
 				for (const player of perfectForages) {
 					const previousBonuses = this.perfectForageBonuses.get(player) || 0;
+					const perfectForageCount = this.perfectForages.get(player) || 0;
 					this.perfectForageBonuses.set(player, previousBonuses + bonus);
+					this.perfectForages.set(player, perfectForageCount + 1);
 				}
 			}
 			text = "**Game " + this.subGameNumber + " winner" + (gameWinners.length > 1 ? "s" : "") + "**: " + Tools.joinList(gameWinners) +
@@ -319,6 +329,9 @@ class GreedentsBerryPiles extends ScriptedGame {
 			const perfectForageBonuses = this.perfectForageBonuses.get(user);
 			if (perfectForageBonuses) bits += perfectForageBonuses;
 			this.addBits(user, bits);
+
+			const perfectForageCount = this.perfectForages.get(user) || 0;
+			if (perfectForageCount >= 3) this.unlockAchievement(user, GreedentsBerryPiles.achievements.blackberry);
 		});
 
 		this.announceWinners();
@@ -360,6 +373,8 @@ const commands: GameCommandDefinitions<GreedentsBerryPiles> = {
 			if (total > this.maxBerryTotal) {
 				player.frozen = true;
 			}
+
+			if (total >= GREEDY_THRESHOLD) this.unlockAchievement(player, GreedentsBerryPiles.achievements.greedy);
 
 			this.playerTotals.set(player, total);
 			this.roundActions.add(player);

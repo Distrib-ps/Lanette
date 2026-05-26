@@ -1,8 +1,12 @@
 import type { Player } from "../room-activity";
 import { ScriptedGame } from "../room-game-scripted";
 import { addPlayers, assertStrictEqual } from "../test/test-tools";
-import type { GameCommandDefinitions, GameFileTests, IGameFile } from "../types/games";
-import type { IPokemon } from "../types/pokemon-showdown";
+import type { GameCommandDefinitions, GameFileTests, IGameAchievement, IGameFile } from "../types/games";
+import type { IMove, IPokemon } from "../types/pokemon-showdown";
+
+type AchievementNames = "choicedwarrior" | "warmonger"; 
+
+const WARMONGER_THRESHOLD = 3;
 
 const minimumMoves = 20;
 const data: {learnsets: Dict<readonly string[]>; moves: string[]; pokemon: string[]} = {
@@ -12,9 +16,14 @@ const data: {learnsets: Dict<readonly string[]>; moves: string[]; pokemon: strin
 };
 
 class LandorusWar extends ScriptedGame {
+	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"choicedwarrior": {name: "Choiced Warrior", type: 'special', bits: 1000, description: "win by using only one move"},
+		"warmonger": {name: "Warmonger", type: 'special', bits: 1000, description: "eliminate " + WARMONGER_THRESHOLD + " or more players in one game"},
+	};
 	decoyPokemon: string[] = [];
 	playerAliases = new Map<Player, string>();
 	playerAliasesList: string[] = [];
+	playerMoves = new Map<Player, IMove | false | undefined>();
 	playerPokemon = new Map<Player, IPokemon>();
 	pokemonList: string[] = [];
 	roundMoves = new Set<Player>();
@@ -125,14 +134,17 @@ class LandorusWar extends ScriptedGame {
 
 		for (const i in this.players) {
 			const player = this.players[i];
-			if (player === winner) continue;
 			const caught = this.suspectedPlayers.get(player);
-			if (caught) this.addBits(player, 50 * caught);
+			if (caught) {
+				if (player !== winner) this.addBits(player, 50 * caught);
+				if (caught >= WARMONGER_THRESHOLD) this.unlockAchievement(player, LandorusWar.achievements.warmonger);
+			}
 		}
 
 		if (winner) {
 			this.winners.set(winner, 1);
 			this.addBits(winner, 500);
+			if (this.playerMoves.get(winner)) this.unlockAchievement(winner, LandorusWar.achievements.choicedwarrior);
 		}
 
 		this.announceWinners();
@@ -224,6 +236,13 @@ const commands: GameCommandDefinitions<LandorusWar> = {
 					player.say("The move was **" + (2 * Math.abs(effectiveness)) + "x** " +
 						(effectiveness < 0 ? "resisted" : "super-effective") + "!");
 				}
+			}
+
+			const playerMove = this.playerMoves.get(player);
+			if (playerMove === undefined) {
+				this.playerMoves.set(player, move);
+			} else if (playerMove && move !== playerMove) {
+				this.playerMoves.set(player, false);
 			}
 
 			this.roundMoves.add(player);

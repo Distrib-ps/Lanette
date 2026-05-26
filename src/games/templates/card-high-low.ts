@@ -128,6 +128,7 @@ export abstract class CardHighLow extends CardGame {
 					winners.push(hands[i]);
 				}
 			}
+			if (this.awardCardChieve) this.awardCardChieve(winners);
 			len = winners.length;
 			const cards: ICard[] = [];
 			const winnersNames: string[] = [];
@@ -208,21 +209,16 @@ export abstract class CardHighLow extends CardGame {
 			const player = this.players[i];
 			const points = this.points.get(player);
 			if (!points) continue;
-			/*
-			if (points === this.options.cards) {
-				if (this.id === 'cacturnespokemoncards') {
-					Games.unlockAchievement(this.room, player, 'Prickly Perfection', this);
-				} else if (this.id === 'mewsmovecards') {
-					Games.unlockAchievement(this.room, player, 'Move it or Lose it', this);
-				}
-			}
-			*/
+			if (this.awardPointsChieve && points >= this.round) this.awardPointsChieve(player);
 			this.addBits(player, this.bitsPerRound * points);
 			this.winners.set(player, points);
 		}
 
 		this.announceWinners();
 	}
+
+	awardCardChieve?(hands: {player: Player; detail: number; card: ICard}[]): void;
+	awardPointsChieve?(player: Player): void;
 }
 
 const commands: GameCommandDefinitions<CardHighLow> = {

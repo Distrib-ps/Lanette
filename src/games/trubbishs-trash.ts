@@ -33,8 +33,8 @@ class TrubbishsTrash extends ScriptedGame {
 	roundTime: number = 5 * 1000;
 	winners = new Map<Player, number>();
 	roundLimit: number = 20;
-	weakestMove: string = '';
-	weakestTrash: Player | false | undefined;
+	weakestMoves: string[] = [];
+	weakestTrashes: Player[] | undefined;
 
 	// eslint-disable-next-line @typescript-eslint/require-await
 	static async loadData(): Promise<void> {
@@ -62,16 +62,22 @@ class TrubbishsTrash extends ScriptedGame {
 	}
 
 	generateMoves(): void {
+		this.weakestMoves = [];
 		const moves = this.sampleMany(data.moves, 3);
-		const basePowers: {move: string; basePower: number}[] = [];
 		for (let i = 0; i < moves.length; i++) {
 			const move = Dex.getExistingMove(moves[i]);
-			basePowers.push({move: move.name, basePower: data.movePoints[moves[i]]});
+			if (!this.weakestMoves.length) {
+				this.weakestMoves.push(move.name);
+			} else {
+				const weakestMovePower = Dex.getExistingMove(this.weakestMoves[0]).basePower;
+				if (move.basePower <= weakestMovePower) {
+					if (move.basePower < weakestMovePower) this.weakestMoves = [];
+					this.weakestMoves.push(move.name);
+				}
+			}
 			this.roundMoves.set(move.id, {name: move.name, points: data.movePoints[moves[i]]});
 			moves[i] = move.name;
 		}
-		basePowers.sort((a, b) => a.basePower - b.basePower);
-		this.weakestMove = basePowers[0].move;
 		const text = "Trubbish found **" + moves.join(", ") + "**!";
 		this.on(text, () => {
 			this.canTrash = true;
@@ -83,6 +89,7 @@ class TrubbishsTrash extends ScriptedGame {
 	// eslint-disable-next-line @typescript-eslint/require-await
 	async onNextRound(): Promise<void> {
 		this.canTrash = false;
+		const weakestTrashes: Player[] = [];
 		if (this.round > 1) {
 			let highestPoints = 0;
 			if (this.roundTrashes.size) {
@@ -101,15 +108,7 @@ class TrubbishsTrash extends ScriptedGame {
 						firstTrash = false;
 					}
 
-					if (move.name === this.weakestMove) {
-						if (this.weakestTrash === undefined) {
-							this.weakestTrash = player;
-						} else {
-							if (this.weakestTrash && this.weakestTrash !== player) this.weakestTrash = false;
-						}
-					} else if (this.weakestTrash === player) {
-						this.weakestTrash = false;
-					}
+					if (this.weakestMoves.includes(move.name)) weakestTrashes.push(player);
 					trashQueue.push({player, move: move.name, points: move.points});
 				});
 				trashQueue.sort((a, b) => b.points - a.points);
@@ -127,6 +126,12 @@ class TrubbishsTrash extends ScriptedGame {
 					this.inactivityEnd();
 					return;
 				}
+			}
+
+			if (!this.weakestTrashes) {
+				this.weakestTrashes = weakestTrashes;
+			} else {
+				this.weakestTrashes = this.weakestTrashes.filter(x => weakestTrashes.includes(x));
 			}
 
 			this.roundTrashes.clear();
@@ -161,7 +166,7 @@ class TrubbishsTrash extends ScriptedGame {
 			if (points && points >= this.maxPoints) {
 				this.winners.set(player, points);
 				if (this.firstTrash === player) this.unlockAchievement(player, TrubbishsTrash.achievements.garbagecollector);
-				if (this.weakestTrash === player) this.unlockAchievement(player, TrubbishsTrash.achievements.technician);
+				if (this.weakestTrashes?.includes(player)) this.unlockAchievement(player, TrubbishsTrash.achievements.technician);
 			}
 		}
 

@@ -1,7 +1,8 @@
 import type { Player } from "../room-activity";
 import { ScriptedGame } from "../room-game-scripted";
-import type { GameCommandDefinitions, IGameFile } from "../types/games";
+import type { GameCommandDefinitions, IGameAchievement, IGameFile } from "../types/games";
 
+type AchievementNames = "fizzwhizz";
 type ExpectedMultiple = 'firstMultiple' | 'secondMultiple' | 'both' | number;
 
 const data: {"categories": string[]; "categoryPools": Dict<string[]>} = {
@@ -9,7 +10,12 @@ const data: {"categories": string[]; "categoryPools": Dict<string[]>} = {
 	"categoryPools": {},
 };
 
+const FIZZ_LIMIT = 100;
+
 class BuzzwolesFizzBuzz extends ScriptedGame {
+	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"fizzwhizz": {name: "Fizz Whizz", type: 'special', bits: 1000, description: "reach " + FIZZ_LIMIT + " fizzes"},
+	}
 	maxPlayers: number = 20;
 	playerOrder: Player[] = [];
 	playerList: Player[] = [];
@@ -17,7 +23,6 @@ class BuzzwolesFizzBuzz extends ScriptedGame {
 	quizRound: number = 0;
 	currentNumber: number = 0;
 	firstMultiple: number = 0;
-	maxNumber: number = 100;
 	secondMultiple: number = 0;
 	expectedMultiple: ExpectedMultiple = 0;
 	roundCategories: {'firstMultiple': string; 'secondMultiple': string} = {firstMultiple: '', secondMultiple: ''};
@@ -170,6 +175,15 @@ class BuzzwolesFizzBuzz extends ScriptedGame {
 
 		this.announceWinners();
 	}
+
+	awardChieve(): void {
+		const chievedPlayers: Player[] = [];
+		for (const i in this.players) {
+			if (this.players[i].eliminated) continue;
+			chievedPlayers.push(this.players[i]);
+		}
+		this.unlockAchievement(chievedPlayers, BuzzwolesFizzBuzz.achievements.fizzwhizz);
+	}
 }
 
 const commands: GameCommandDefinitions<BuzzwolesFizzBuzz> = {
@@ -299,8 +313,9 @@ const commands: GameCommandDefinitions<BuzzwolesFizzBuzz> = {
 			if (match) {
 				this.currentPlayer = null;
 				this.currentNumber++;
-				if (this.currentNumber === this.maxNumber) {
+				if (this.currentNumber === FIZZ_LIMIT) {
 					this.resetCount();
+					this.awardChieve();
 				} else {
 					void this.nextRound();
 				}

@@ -4,13 +4,16 @@ import type { GameCommandDefinitions, GameFileTests, IGameAchievement, IGameFile
 import type { IActionCardData, ICard, IPokemonCard } from "./templates/card";
 import { CardMatching, game as cardGame } from "./templates/card-matching";
 
-type AchievementNames = "luckofthedraw";
+type AchievementNames = "chainreaction" | "luckofthedraw";
 type ActionCardNames = 'manaphy' | 'phione' | 'pachirisu';
 type ActionCardsType = KeyedDict<ActionCardNames, IActionCardData<StakatakasCardTower>>;
 
+const CHAIN_REACTION_THRESHOLD = 12;
+
 class StakatakasCardTower extends CardMatching<ActionCardsType> {
 	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
-		"luckofthedraw": {name: "Luck of the Draw", type: 'shiny', bits: 1000, repeatBits: 250, description:'draw and play a shiny card'},
+		"chainreaction": {name: "Chain Reaction", type: 'special', bits: 1000, description: 'win with a chain of ' + CHAIN_REACTION_THRESHOLD + ' or more'},
+		"luckofthedraw": {name: "Luck of the Draw", type: 'shiny', bits: 1000, description: 'draw and play a shiny card'},
 	};
 
 	actionCards: ActionCardsType = {
@@ -175,6 +178,15 @@ class StakatakasCardTower extends CardMatching<ActionCardsType> {
 		}
 
 		return true;
+	}
+
+	onEnd(): void {
+		for (const i in this.players) {
+			if (!this.players[i].metWinCondition) continue;
+			if (this.lastPlayedCardsCount >= CHAIN_REACTION_THRESHOLD) this.unlockAchievement(this.players[i], StakatakasCardTower.achievements.chainreaction);
+		}
+
+		super.onEnd();
 	}
 }
 

@@ -1,8 +1,16 @@
-import type { IGameFile } from "../types/games";
-import type { IPokemonCard } from "./templates/card";
+import type { Player } from '../room-activity';
+import type { IGameAchievement, IGameFile } from "../types/games";
+import type { ICard, IPokemonCard } from "./templates/card";
 import { CardHighLow, game as cardGame } from "./templates/card-high-low";
 
+type AchievementNames = "flushed" | "middleoftheroad";
+
 class CacturnesPokemonCards extends CardHighLow {
+	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"flushed": {name: "Flushed", type: 'special', bits: 1000, description: 'reach the maximum score in 5 rounds'},
+		"middleoftheroad": {name: "Middle of the Road", type: 'special', bits: 1000, description: 'win a round with a Pokemon in the NFE tier'},
+	};
+
 	canLateJoin: boolean = true;
 	categoryAbbreviations: Dict<string> = {hp: 'HP', atk: 'Atk', def: 'Def', spa: 'SpA', spd: 'SpD', spe: 'Spe', bst: 'BST'};
 	categoryNames: Dict<string> = {hp: 'HP', atk: 'Attack', def: 'Defense', spa: 'Special Attack', spd: 'Special Defense', spe: 'Speed',
@@ -22,6 +30,19 @@ class CacturnesPokemonCards extends CardHighLow {
 			// @ts-expect-error
 			return card.baseStats[detail] as number;
 		}
+	}
+
+	awardCardChieve(hands: {player: Player; detail: number; card: ICard}[]): void {
+		for (const hand of hands) {
+			const pokemon = Dex.getPokemon(hand.card.name);
+			if (pokemon && (pokemon.tier === "NFE" || (pokemon.prevo && pokemon.evos.length))) {
+				this.unlockAchievement(hand.player, CacturnesPokemonCards.achievements.middleoftheroad);
+			}
+		}
+	}
+
+	awardPointsChieve(player: Player): void {
+		this.unlockAchievement(player, CacturnesPokemonCards.achievements.flushed);
 	}
 }
 

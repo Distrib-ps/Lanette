@@ -32,6 +32,7 @@ export abstract class CardMatching<ActionCardsType extends object = Dict<IAction
 	deckPool: IPokemonCard[] = [];
 	eggGroupsLimit: number = 0;
 	playerInactiveRoundLimit: number = 3;
+	lastPlayedCardsCount: number = 0;
 	maxCardRounds: number = 30;
 	maxPlayers: number = 15;
 	minimumPlayedCards: number = 1;
@@ -653,6 +654,8 @@ export abstract class CardMatching<ActionCardsType extends object = Dict<IAction
 			htmlPage.renderHandHtml();
 			htmlPage.send();
 		}
+
+		this.lastPlayedCardsCount = playedCards.length;
 
 		return true;
 	}

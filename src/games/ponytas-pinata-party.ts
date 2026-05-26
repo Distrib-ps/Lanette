@@ -1,8 +1,16 @@
 import type { Player } from "../room-activity";
 import { ScriptedGame } from "../room-game-scripted";
-import type { GameCommandDefinitions, IGameFile } from "../types/games";
+import type { GameCommandDefinitions, IGameAchievement, IGameFile } from "../types/games";
+
+type AchievementNames = "fashionablylate";
+
+const FASHIONABLY_LATE_THRESHOLD = 400;
 
 class PonytasPinataParty extends ScriptedGame {
+	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"fashionablylate": {name: "Fashionably Late", type: 'special', bits: 1000, repeatBits: 250, description: "get " + FASHIONABLY_LATE_THRESHOLD + " or more points in one game"},
+	};
+
 	canHit: boolean = false;
 	inactiveRoundLimit: number = 5;
 	maxRound: number = 10;
@@ -89,6 +97,7 @@ class PonytasPinataParty extends ScriptedGame {
 
 		this.winners.forEach((value, player) => {
 			this.addBits(player, 500);
+			if (highestPoints >= FASHIONABLY_LATE_THRESHOLD) this.unlockAchievement(player, PonytasPinataParty.achievements.fashionablylate);
 		});
 
 		this.announceWinners();

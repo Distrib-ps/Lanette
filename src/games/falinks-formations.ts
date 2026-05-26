@@ -1,6 +1,8 @@
 import type { Player } from "../room-activity";
 import { ScriptedGame } from "../room-game-scripted";
-import type { GameCommandDefinitions, IGameFile } from "../types/games";
+import type { GameCommandDefinitions, IGameAchievement, IGameFile } from "../types/games";
+
+type AchievementNames = "noretreat";
 
 const MIN_GUESS = 1;
 const MAX_GUESS = 6;
@@ -8,6 +10,10 @@ const BASE_POINTS = 12;
 const GUESS_COMMAND = "guess";
 
 class FalinksFormations extends ScriptedGame {
+	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"noretreat": {name: "No Retreat", type: 'special', bits: 1000, description: "win by getting 6 points twice in a row"},
+	}
+
 	hasAssistActions: boolean = true;
 	points = new Map<Player, number>();
 	playerList: Player[] = [];
@@ -109,6 +115,7 @@ const commands: GameCommandDefinitions<FalinksFormations> = {
 					for (const i in this.players) {
 						if (this.players[i] !== player) this.players[i].eliminated = true;
 					}
+					if (this.getDisplayedRoundNumber() === 2) this.unlockAchievement(player, FalinksFormations.achievements.noretreat);
 					this.end();
 					return true;
 				} else {

@@ -1,8 +1,10 @@
 import type { Player } from "../room-activity";
 import { ScriptedGame } from "../room-game-scripted";
 import { addPlayers, assert, runCommand } from "../test/test-tools";
-import type { GameCommandDefinitions, GameFileTests, IGameFile } from "../types/games";
+import type { GameCommandDefinitions, GameFileTests, IGameAchievement, IGameFile } from "../types/games";
 import type { IPokemon } from "../types/pokemon-showdown";
+
+type AchievementNames = "primscharming";
 
 const data: {'parameters': Dict<string[]>; 'parameterLengths': Dict<number>; 'pokemon': string[]} = {
 	"parameters": {},
@@ -10,6 +12,7 @@ const data: {'parameters': Dict<string[]>; 'parameterLengths': Dict<number>; 'po
 	"pokemon": [],
 };
 
+const PRIMS_CHARMING_THRESHOLD = 4;
 const MINIMUM_PARAMETERS = 2;
 const CHARM_WARNING_TIMER = 45 * 1000;
 const CHARM_ROUND_TIMER = 60 * 1000;
@@ -17,6 +20,10 @@ const SELECT_COMMAND = "select";
 const CHARM_COMMAND = "charm";
 
 class DelcattysHideAndSeek extends ScriptedGame {
+	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"primscharming": {name: "Prims Charming", type: 'special', bits: 1000, description: "charm " + PRIMS_CHARMING_THRESHOLD + " or more players at once"},
+	}
+
 	canCharm: boolean = false;
 	canSelect: boolean = false;
 	categories: string[] = [];
@@ -241,6 +248,7 @@ const commands: GameCommandDefinitions<DelcattysHideAndSeek> = {
 			} else {
 				this.say("**" + this.charmer.name + "** charmed **" + pokemon.name + "** and eliminated " +
 					Tools.joinList(eliminatedPlayers) + " from the game!");
+				if (eliminatedPlayers.length >= PRIMS_CHARMING_THRESHOLD) this.unlockAchievement(this.charmer, DelcattysHideAndSeek.achievements.primscharming);
 			}
 
 			this.setTimeout(() => void this.nextRound(), 5 * 1000);

@@ -1,6 +1,8 @@
 import type { Player } from "../room-activity";
 import { ScriptedGame } from "../room-game-scripted";
-import type { GameCommandDefinitions, IGameFile } from "../types/games";
+import type { GameCommandDefinitions, IGameAchievement, IGameFile } from "../types/games";
+
+type AchievementNames = "lightningstrike" | "prolixprodigy";
 
 interface IRoundAbility {
 	name: string;
@@ -12,17 +14,24 @@ const data: {abilities: string[]} = {
 };
 
 class DedennesAbilityBlitz extends ScriptedGame {
+	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"lightningstrike": {name: "Lightning Strike", type: 'first', bits: 1000, repeatBits: 250, description: "answer first every round and win"},
+		"prolixprodigy": {name: "Prolix Prodigy", type: 'special', bits: 1000, repeatBits: 250, description: "answer with the longest answer every round"},
+	}
+
 	canSelect: boolean = false;
 	firstType: Player | null = null;
 	inactiveRoundLimit: number = 5;
-	maxPoints: number = 1000;
+	lightningStrike: Player | false | undefined;
+	longestAbilities: string[] = [];
+	maxPoints: number = 200;
 	points = new Map<Player, number>();
+	prolixProdigies: Player[] | undefined;
 	revealTime: number = 5 * 1000;
 	roundAbilities = new Map<string, IRoundAbility>();
 	roundLimit: number = 20;
 	roundSelections = new Map<Player, IRoundAbility>();
-	roundTime: number = 3 * 1000;
-	highestCatch: Player | null = null;
+	roundTime: number = 10 * 1000;
 
 	// eslint-disable-next-line @typescript-eslint/require-await
 	static async loadData(): Promise<void> {
@@ -35,10 +44,20 @@ class DedennesAbilityBlitz extends ScriptedGame {
 	}
 
 	generateAbilities(): void {
+		this.longestAbilities = [];
 		const abilities = this.sampleMany(data.abilities, 3);
 		for (const ability of abilities) {
 			const id = Tools.toId(ability);
 			this.roundAbilities.set(id, {name: ability, points: id.length * 10});
+			if (!this.longestAbilities.length) {
+				this.longestAbilities.push(id);
+			} else {
+				const longestAbilityLength = this.longestAbilities[0].length;
+				if (id.length >= longestAbilityLength) {
+					if (id.length > longestAbilityLength) this.longestAbilities = [];
+					this.longestAbilities.push(id);
+				}
+			}
 		}
 		const text = "Randomly generated abilities: **" + abilities.join(", ") + "**!";
 		this.on(text, () => {
@@ -51,22 +70,28 @@ class DedennesAbilityBlitz extends ScriptedGame {
 	// eslint-disable-next-line @typescript-eslint/require-await
 	async onNextRound(): Promise<void> {
 		this.canSelect = false;
+		const prolixProdigies: Player[] = [];
 		if (this.round > 1) {
 			let highestPoints = 0;
 			if (this.roundSelections.size) {
 				if (this.inactiveRounds) this.inactiveRounds = 0;
 
 				const selections: {player: Player; ability: string; points: number}[] = [];
-				// let actions = 0;
+				let firstAnswer = true;
 				this.roundSelections.forEach((ability, player) => {
 					if (player.eliminated) return;
-					/*
-					if (ability.points > 0) {
-						if (actions === 0) this.markFirstAction(player, 'firstType');
-						actions++;
-					}
-					*/
 					selections.push({player, ability: ability.name, points: ability.points});
+
+					if (firstAnswer) {
+						if (this.lightningStrike === undefined) {
+							this.lightningStrike = player;
+						} else {
+							if (this.lightningStrike && this.lightningStrike !== player) this.lightningStrike = false;
+						}
+					}
+					firstAnswer = false;
+
+					if (this.longestAbilities.includes(Tools.toId(ability.name))) prolixProdigies.push(player);
 				});
 				selections.sort((a, b) => b.points - a.points);
 				for (let i = 0, len = selections.length; i < len; i++) {
@@ -89,6 +114,13 @@ class DedennesAbilityBlitz extends ScriptedGame {
 
 			this.roundSelections.clear();
 			this.roundAbilities.clear();
+
+			if (!this.prolixProdigies) {
+				this.prolixProdigies = prolixProdigies;
+			} else {
+				this.prolixProdigies = this.prolixProdigies.filter(x => prolixProdigies.includes(x));
+			}
+			
 			if (highestPoints >= this.maxPoints) {
 				this.setTimeout(() => this.end(), 3000);
 				return;
@@ -102,6 +134,7 @@ class DedennesAbilityBlitz extends ScriptedGame {
 				return;
 			}
 		}
+
 		const html = this.getRoundHtml(players => this.getPlayerPoints(players));
 		const uhtmlName = this.uhtmlBaseName + '-round-html';
 		this.onUhtml(uhtmlName, html, () => {
@@ -116,15 +149,11 @@ class DedennesAbilityBlitz extends ScriptedGame {
 			const player = this.players[i];
 			const points = this.points.get(player);
 			if (points && points >= this.maxPoints) this.winners.set(player, points);
+			if (player === this.lightningStrike) this.unlockAchievement(player, DedennesAbilityBlitz.achievements.lightningstrike);
+			if (this.prolixProdigies?.includes(player)) this.unlockAchievement(player, DedennesAbilityBlitz.achievements.prolixprodigy);
 		}
 		this.convertPointsToBits(0.5, 0.1);
 		this.announceWinners();
-		/*
-		this.winners.forEach((value, user) => {
-			if (user === this.firstType) Games.unlockAchievement(this.room, user, "Pokemon Ranger", this);
-			if (this.highestCatch === user) Games.unlockAchievement(this.room, user, "Legendary Collector", this);
-		});
-		*/
 	}
 
 	destroyPlayers(): void {

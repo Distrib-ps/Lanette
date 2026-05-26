@@ -2,13 +2,16 @@ import type { PRNGSeed } from "../lib/prng";
 import type { Player } from "../room-activity";
 import { ScriptedGame } from "../room-game-scripted";
 import type { Room } from "../rooms";
-import type { GameCommandDefinitions, IGameFile } from "../types/games";
+import type { GameCommandDefinitions, IGameAchievement, IGameFile } from "../types/games";
 import type { User } from "../users";
+
+type AchievementNames = "trickzoom";
 
 const GRID_ROWS = 4;
 const GRID_COLUMNS = 4;
 const LAST_MOVES_LIMIT = 2;
 const OVERALL_MOVES_LIMIT = 3;
+const TRICK_ZOOM_TIME = 20;
 
 const data: {allPossibleMoves: Dict<readonly string[]>; movesByPokemon: Dict<readonly string[]>; pokedex: string[]} = {
 	allPossibleMoves: {},
@@ -17,6 +20,10 @@ const data: {allPossibleMoves: Dict<readonly string[]>; movesByPokemon: Dict<rea
 };
 
 class TrevenantsTrickOrTreat extends ScriptedGame {
+	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"trickzoom": {name: "Trick Zoom", type: 'special', bits: 1000, repeatBits: 250, description: "win in " + TRICK_ZOOM_TIME + " seconds or less"},
+	};
+
 	indicesToReplace = new Set();
 	lastMoves = new Map<Player, string[]>();
 	overallMoves = new Map<Player, Dict<number>>();
@@ -92,6 +99,11 @@ class TrevenantsTrickOrTreat extends ScriptedGame {
 		for (const i in this.players) {
 			if (this.players[i].eliminated || !this.points.has(this.players[i])) continue;
 			this.addBits(this.players[i], this.points.get(this.players[i])! / 2);
+			console.log(this.options.points + " " + this.points.get(this.players[i]));
+			if (this.options.points && (this.points.get(this.players[i]) || 0) >= this.options.points) {
+				console.log(Date.now() - this.startTime);
+				if (Date.now() - this.startTime < (TRICK_ZOOM_TIME + 10) * 1000) this.unlockAchievement(this.players[i], TrevenantsTrickOrTreat.achievements.trickzoom);
+			}
 		}
 
 		this.announceWinners();

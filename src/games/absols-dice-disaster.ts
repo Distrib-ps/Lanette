@@ -1,6 +1,6 @@
 import type { Player } from "../room-activity";
 import { ScriptedGame } from "../room-game-scripted";
-import type { GameCommandDefinitions, IGameFile } from "../types/games";
+import type { GameCommandDefinitions, IGameAchievement, IGameFile } from "../types/games";
 
 type AbsolSense = 'disaster' | 'stillness' | 'fortune';
 const senseRolls: KeyedDict<AbsolSense, number> = {
@@ -9,7 +9,14 @@ const senseRolls: KeyedDict<AbsolSense, number> = {
 	fortune: 100,
 };
 
+type AchievementNames = "onpoint" | "allin";
+
 class AbsolsDiceDisaster extends ScriptedGame {
+	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"allin": {name: "All-In", type: 'special', bits: 1000, description: "bid 100 and win the game"},
+		"onpoint": {name: "On Point", type: 'special', bits: 1000, description: "have the random generated number land exactly on your bid"},
+	}
+
 	absolSense: AbsolSense = 'disaster';
 	bestPlayer: Player | null = null;
 	bestBid: number = -1;
@@ -85,7 +92,11 @@ class AbsolsDiceDisaster extends ScriptedGame {
 					if (this.roundDiceRoll >= this.bestBid) {
 						this.say(diceText);
 						for (const i in this.players) {
-							if (this.players[i] === this.bestPlayer!) continue;
+							if (this.players[i] === this.bestPlayer!) {
+								if (this.roundDiceRoll === this.bestBid) this.unlockAchievement(this.players[i], AbsolsDiceDisaster.achievements.onpoint);
+								if (this.roundDiceRoll === 100) this.unlockAchievement(this.players[i], AbsolsDiceDisaster.achievements.allin);
+								continue;
+							}
 							this.players[i].eliminated = true;
 						}
 						this.end();

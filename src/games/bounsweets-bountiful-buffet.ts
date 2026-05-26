@@ -1,7 +1,7 @@
 import type { Player } from "../room-activity";
 import { ScriptedGame } from "../room-game-scripted";
 import { addPlayers, assertStrictEqual, runCommand } from "../test/test-tools";
-import type { GameCommandDefinitions, GameFileTests, IGameFile } from "../types/games";
+import type { GameCommandDefinitions, GameFileTests, IGameAchievement, IGameFile } from "../types/games";
 
 const data: {'meals': string[]; 'aliases': Dict<string>} = {
 	meals: [],
@@ -29,7 +29,13 @@ for (const meal of meals) {
 	}
 }
 
+type AchievementNames = "selfish";
+
 class BounsweetsBountifulBuffet extends ScriptedGame {
+	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"selfish": {name: "Selfish", type: 'special', bits: 1000, description: "pick a meal on your own every round"},
+	}
+
 	canLateJoin: boolean = true;
 	canSelect: boolean = false;
 	inactiveRoundLimit: number = 5;
@@ -38,6 +44,7 @@ class BounsweetsBountifulBuffet extends ScriptedGame {
 	numberOfMeals: number = 0;
 	points = new Map<Player, number>();
 	selectedMeals = new Map<Player, number>();
+	selfishPlayers: Player[] = [];
 
 	// eslint-disable-next-line @typescript-eslint/require-await
 	async onNextRound(): Promise<void> {
@@ -62,6 +69,7 @@ class BounsweetsBountifulBuffet extends ScriptedGame {
 			if (activePlayers) {
 				if (this.inactiveRounds) this.inactiveRounds = 0;
 
+				const newSelfishPlayers: Player[] = [];
 				for (const id in this.players) {
 					if (this.players[id].eliminated) continue;
 					const player = this.players[id];
@@ -72,14 +80,20 @@ class BounsweetsBountifulBuffet extends ScriptedGame {
 						points += earnedPoints;
 						player.say("You earned " + earnedPoints + " points! Your total is now " + points + ".");
 						this.points.set(player, points);
+						if (counts[index] === 1) newSelfishPlayers.push(this.players[id]);
 					}
 				}
+				this.selfishPlayers = this.selfishPlayers.filter(x => newSelfishPlayers.includes(x));
 			} else {
 				this.inactiveRounds++;
 				if (this.inactiveRounds === this.inactiveRoundLimit) {
 					this.inactivityEnd();
 					return;
 				}
+			}
+		} else {
+			for (const id in this.players) {
+				this.selfishPlayers.push(this.players[id]);
 			}
 		}
 
@@ -97,6 +111,7 @@ class BounsweetsBountifulBuffet extends ScriptedGame {
 				} else if (points === highestPoints) {
 					this.winners.set(player, points);
 				}
+				if (this.selfishPlayers.includes(this.players[id])) this.unlockAchievement(this.players[id], BounsweetsBountifulBuffet.achievements.selfish);
 			}
 
 			this.end();

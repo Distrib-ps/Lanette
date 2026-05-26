@@ -1,8 +1,10 @@
 import type { Player } from "../room-activity";
 import { ScriptedGame } from "../room-game-scripted";
 import { assert } from "../test/test-tools";
-import type { GameCommandDefinitions, GameFileTests, IGameFile } from "../types/games";
+import type { GameCommandDefinitions, GameFileTests, IGameAchievement, IGameFile } from "../types/games";
 import type { IPokemon } from "../types/pokemon-showdown";
+
+type AchievementNames = "camouflage"; 
 
 const SELECT_WARNING_TIMER = 45 * 1000;
 const SELECT_ROUND_TIMER = 60 * 1000;
@@ -14,6 +16,10 @@ const data: {'parameters': Dict<string[]>; 'pokemon': string[]} = {
 };
 
 class SkittysSeekAndHide extends ScriptedGame {
+	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"camouflage": {name: "Camouflage", type: 'special', bits: 1000, description: "win without losing a single life"},
+	};
+
 	canCharm: boolean = false;
 	canSelect: boolean = false;
 	categories: string[] = [];
@@ -188,6 +194,7 @@ class SkittysSeekAndHide extends ScriptedGame {
 			if (this.players[i].eliminated) continue;
 			this.winners.set(this.players[i], 1);
 			this.addBits(this.players[i], 500);
+			if (this.lives.get(this.players[i]) === this.startingLives) this.unlockAchievement(this.players[i], SkittysSeekAndHide.achievements.camouflage);
 		}
 
 		this.announceWinners();

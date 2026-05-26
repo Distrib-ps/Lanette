@@ -1,11 +1,21 @@
 import type { Player } from "../room-activity";
 import { ScriptedGame } from "../room-game-scripted";
-import type { GameCommandDefinitions, IGameFile } from "../types/games";
+import type { GameCommandDefinitions, IGameAchievement, IGameFile } from "../types/games";
+
+type AchievementNames = "panicatthechair" | "speedysitter";
 
 class ChatotsMusicalChairs extends ScriptedGame {
+	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"panicatthechair": {name: "Panic! at the Chair", type: 'special', bits: 1000, description: "sit in the last available chair after missing at least 2 others"},
+		"speedysitter": {name: "Speedy Sitter", type: 'first', bits: 1000, description: "sit first every round"},
+	}
+
+	firstSit: Player | undefined;
 	roundActions = new Map<Player, number>();
 	roundChairs: number = 0;
 	roundTimes: number[] = [5000, 5500, 6000, 6500, 7000];
+	sitAttempts = new Map<Player, number>();
+	speedySitter: Player | false | undefined;
 
 	stopMusic(): void {
 		if (this.getRemainingPlayerCount() < 2) return this.end();
@@ -18,6 +28,14 @@ class ChatotsMusicalChairs extends ScriptedGame {
 				player.sayPrivateHtml("You did not sit in a chair in time!");
 				this.eliminatePlayer(player);
 			}
+
+			if (player === this.firstSit) {
+				if (this.speedySitter === undefined) {
+					this.speedySitter = player;
+				} else {
+					if (this.speedySitter && this.speedySitter !== player) this.speedySitter = false;
+				}
+			}
 		}
 
 		void this.nextRound();
@@ -25,6 +43,13 @@ class ChatotsMusicalChairs extends ScriptedGame {
 
 	// eslint-disable-next-line @typescript-eslint/require-await
 	async onNextRound(): Promise<void> {
+		this.firstSit = undefined;
+		for (const i in this.players) {
+			if (this.players[i].eliminated) continue;
+
+			this.sitAttempts.set(this.players[i], 0);
+		}
+
 		this.roundChairs = 0;
 
 		const len = this.getRemainingPlayerCount();
@@ -63,6 +88,7 @@ class ChatotsMusicalChairs extends ScriptedGame {
 		if (winner) {
 			this.winners.set(winner, 1);
 			this.addBits(winner, 500);
+			if (this.speedySitter) this.unlockAchievement(winner, ChatotsMusicalChairs.achievements.speedysitter);
 		}
 
 		this.announceWinners();
@@ -97,13 +123,18 @@ const commands: GameCommandDefinitions<ChatotsMusicalChairs> = {
 				if (playerChair === chair) takenChair = true;
 			});
 
+			const attempts = this.sitAttempts.get(player);
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			if (takenChair) {
 				player.sayPrivateHtml("The chair #" + chair + " is already taken!");
+				if (attempts || attempts === 0) this.sitAttempts.set(player, attempts + 1);
 				return false;
 			}
 
+			if (!this.roundActions.size) this.firstSit = player;
 			this.roundActions.set(player, chair);
+			if (this.roundActions.size === this.roundChairs && attempts && attempts > 1) this.unlockAchievement(player, ChatotsMusicalChairs.achievements.panicatthechair);
+
 			return true;
 		},
 	},
