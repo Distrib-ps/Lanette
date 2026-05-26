@@ -13,7 +13,7 @@ const CHAIN_REACTION_THRESHOLD = 12;
 class StakatakasCardTower extends CardMatching<ActionCardsType> {
 	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
 		"chainreaction": {name: "Chain Reaction", type: 'special', bits: 1000, description: 'win with a chain of ' + CHAIN_REACTION_THRESHOLD + ' or more'},
-		"luckofthedraw": {name: "Luck of the Draw", type: 'shiny', bits: 1000, description: 'draw and play a shiny card'},
+		"luckofthedraw": {name: "Luck of the Draw", type: 'shiny', bits: 1000, repeatBits: 250, description: 'draw and play a shiny card'},
 	};
 
 	actionCards: ActionCardsType = {

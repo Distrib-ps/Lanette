@@ -8,8 +8,8 @@ const maxPoints = 5;
 
 class ThievulsSweetThief extends ScriptedGame {
 	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
-		"hesitantthievul": {name: "Hesitant Thievul", type: 'special', bits: 1000, repeatBits: 250, description: "only steal once per round and win"},
-		"sugarrush": {name: "Sugar Rush", type: 'special', bits: 1000, repeatBits: 250, description: "get all the sweets in one game"},
+		"hesitantthievul": {name: "Hesitant Thievul", type: 'special', bits: 1000, description: "only steal once per round and win"},
+		"sugarrush": {name: "Sugar Rush", type: 'special', bits: 1000, description: "get all the sweets in one game"},
 	};
 
 	canLateJoin = true;

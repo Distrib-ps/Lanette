@@ -15,8 +15,8 @@ const data: {abilities: string[]} = {
 
 class DedennesAbilityBlitz extends ScriptedGame {
 	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
-		"lightningstrike": {name: "Lightning Strike", type: 'first', bits: 1000, repeatBits: 250, description: "answer first every round and win"},
-		"prolixprodigy": {name: "Prolix Prodigy", type: 'special', bits: 1000, repeatBits: 250, description: "answer with the longest answer every round"},
+		"lightningstrike": {name: "Lightning Strike", type: 'first', bits: 1000, description: "answer first every round and win"},
+		"prolixprodigy": {name: "Prolix Prodigy", type: 'special', bits: 1000, description: "answer with the longest answer every round"},
 	}
 
 	canSelect: boolean = false;

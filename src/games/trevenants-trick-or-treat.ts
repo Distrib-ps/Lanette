@@ -21,7 +21,7 @@ const data: {allPossibleMoves: Dict<readonly string[]>; movesByPokemon: Dict<rea
 
 class TrevenantsTrickOrTreat extends ScriptedGame {
 	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
-		"trickzoom": {name: "Trick Zoom", type: 'special', bits: 1000, repeatBits: 250, description: "win in " + TRICK_ZOOM_TIME + " seconds or less"},
+		"trickzoom": {name: "Trick Zoom", type: 'special', bits: 1000, description: "win in " + TRICK_ZOOM_TIME + " seconds or less"},
 	};
 
 	indicesToReplace = new Set();

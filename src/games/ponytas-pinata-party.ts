@@ -8,7 +8,7 @@ const FASHIONABLY_LATE_THRESHOLD = 400;
 
 class PonytasPinataParty extends ScriptedGame {
 	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
-		"fashionablylate": {name: "Fashionably Late", type: 'special', bits: 1000, repeatBits: 250, description: "get " + FASHIONABLY_LATE_THRESHOLD + " or more points in one game"},
+		"fashionablylate": {name: "Fashionably Late", type: 'special', bits: 1000, description: "get " + FASHIONABLY_LATE_THRESHOLD + " or more points in one game"},
 	};
 
 	canHit: boolean = false;
