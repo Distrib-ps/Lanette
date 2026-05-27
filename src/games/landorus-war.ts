@@ -6,7 +6,7 @@ import type { IMove, IPokemon } from "../types/pokemon-showdown";
 
 type AchievementNames = "choicedwarrior" | "warmonger"; 
 
-const WARMONGER_THRESHOLD = 3;
+const WARMONGER_THRESHOLD = 4;
 
 const minimumMoves = 20;
 const data: {learnsets: Dict<readonly string[]>; moves: string[]; pokemon: string[]} = {
