@@ -2,7 +2,7 @@ import type { Player } from "../room-activity";
 import { ScriptedGame } from "../room-game-scripted";
 import type { GameCommandDefinitions, IGameAchievement, IGameFile } from "../types/games";
 
-type AchievementNames = "sunkentreasure";
+type AchievementNames = "quickrod" | "sunkentreasure";
 
 const data: {baseStatTotals: Dict<number>; pokedex: string[]} = {
 	baseStatTotals: {},
@@ -11,12 +11,13 @@ const data: {baseStatTotals: Dict<number>; pokedex: string[]} = {
 
 class WishiwashisStatFishing extends ScriptedGame {
 	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"quickrod": {name: "Quick Rod", type: 'first', bits: 1000, description: 'reel first in every round'},
 		"sunkentreasure": {name: "Sunken Treasure", type: 'shiny', bits: 1000, repeatBits: 250, description: 'reel in a shiny Pokemon'},
 	};
 
 	canReel: boolean = false;
 	consecutiveReels = new Map<Player, number>();
-	// firstReel: Player | null;
+	firstReel: Player | false | undefined;
 	inactiveRoundLimit: number = 5;
 	lastSpecies: string = '';
 	maxPoints: number = 2000;
@@ -57,7 +58,11 @@ class WishiwashisStatFishing extends ScriptedGame {
 			const player = this.queue[i];
 			if (!firstPlayer) {
 				firstPlayer = player;
-				// this.markFirstAction(player, 'firstReel');
+				if (this.firstReel === undefined) {
+					this.firstReel = player;
+				} else if (this.firstReel && this.firstReel !== player) {
+					this.firstReel = false;
+				}
 			}
 			const consecutiveReels = this.consecutiveReels.get(player) || 0;
 			this.consecutiveReels.set(player, consecutiveReels + 1);
@@ -154,6 +159,7 @@ class WishiwashisStatFishing extends ScriptedGame {
 				highestPoints = points;
 			}
 			if (points === highestPoints) this.winners.set(player, points);
+			if (this.firstReel && this.firstReel === player) this.unlockAchievement(player, WishiwashisStatFishing.achievements.quickrod);
 		}
 
 		this.winners.forEach((value, player) => this.addBits(player, 500));

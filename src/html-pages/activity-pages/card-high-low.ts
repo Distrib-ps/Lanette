@@ -1,5 +1,5 @@
 import type { ICard } from "../../games/templates/card";
-import type { CardHighLow } from "../../games/templates/card-high-low";
+import type { CardHighLow, IRoundCardInfo } from "../../games/templates/card-high-low";
 import type { Player } from "../../room-activity";
 import type { ScriptedGame } from "../../room-game-scripted";
 import { CardMatchingPage, type ICardMatchingPageOptions } from "./card-matching";
@@ -23,9 +23,9 @@ export class CardHighLowPage extends CardMatchingPage {
 	}
 
 	getCardsPrivateHtml(cards: ICard[]): string {
-		const cardInfo: {card: ICard; detail: number}[] = [];
+		const cardInfo: IRoundCardInfo[] = [];
 		for (const card of cards) {
-			cardInfo.push({card: card, detail: this.activity.getCardDetail(card, this.activity.currentCategory)});
+			cardInfo.push({card: card, detail: this.activity.getCardDetail(card, this.activity.currentCategory), player: this.player});
 		}
 
 		const sorted = this.activity.sortCardInfoForRound(cardInfo);

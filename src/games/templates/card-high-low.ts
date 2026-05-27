@@ -8,7 +8,7 @@ import type { CardHighLowPage } from '../../html-pages/activity-pages/card-high-
 export interface IRoundCardInfo {
 	card: ICard;
 	detail: number;
-	player?: Player;
+	player: Player;
 }
 
 const PLAY_COMMAND = "play";
@@ -100,7 +100,7 @@ export abstract class CardHighLow extends CardGame {
 
 	scoreRound(): void {
 		this.canPlay = false;
-		const hands: {player: Player; detail: number; card: ICard}[] = [];
+		const hands: IRoundCardInfo[] = [];
 		for (const i in this.players) {
 			if (this.players[i].eliminated) continue;
 			const player = this.players[i];
@@ -217,7 +217,7 @@ export abstract class CardHighLow extends CardGame {
 		this.announceWinners();
 	}
 
-	awardCardChieve?(hands: {player: Player; detail: number; card: ICard}[]): void;
+	awardCardChieve?(hands: IRoundCardInfo[]): void;
 	awardPointsChieve?(player: Player): void;
 }
 

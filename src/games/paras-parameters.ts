@@ -5,7 +5,7 @@ import type { GameFileTests, IGameAchievement, IGameFile } from "../types/games"
 import type { IParam, IParametersResponse, ParamType } from '../workers/parameters';
 import { game as questionAndAnswerGame, QuestionAndAnswer } from './templates/question-and-answer';
 
-type AchievementNames = "dexsearchhero";
+type AchievementNames = "dexsearchhero" | "nationaldexsearchhero" | "captainnationaldexsearchhero";
 
 const BASE_NUMBER_OF_PARAMS = 2;
 const MIN_GEN = 1;
@@ -18,8 +18,13 @@ export class ParasParameters extends QuestionAndAnswer {
 	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
 		'dexsearchhero': {name: 'Dexsearch Hero', type: 'first', bits: 250, minigame: true,
 			description: "be the first to successfully answer in a minigame"},
+		"nationaldexsearchhero": {name: "National Dexsearch Hero", type: 'all-answers', bits: 1000, description: "get every answer in one game"},
+		"captainnationaldexsearchhero": {name: "Captain National Dexsearch Hero", type: 'all-answers-team', bits: 1000, mode: 'collectiveteam', 
+			description: "get every answer for your team and win the game"},
 	};
 
+	allAnswersAchievement = ParasParameters.achievements.nationaldexsearchhero;
+	allAnswersTeamAchievement = ParasParameters.achievements.captainnationaldexsearchhero;
 	currentNumberOfParams: number = 0;
 	customParamTypes: ParamType[] | null = null;
 	minimumResults: number = 3;

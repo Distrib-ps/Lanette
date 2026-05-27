@@ -1,7 +1,14 @@
-import type { IGameFile } from "../types/games";
+import type { IGameAchievement, IGameFile } from "../types/games";
 import { Chain, game as chainGame } from "./templates/chain";
 
-class UnownsPokemonChain extends Chain {}
+type AchievementNames = "chainchamp";
+
+class UnownsPokemonChain extends Chain {
+	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"chainchamp": {name: "Chain Champ", type: 'special', bits: 1000, description: 'get every answer in one game (free-join only)'},
+	};
+	allAnswersAchievement = UnownsPokemonChain.achievements.chainchamp;
+}
 
 export const game: IGameFile<UnownsPokemonChain> = Games.copyTemplateProperties(chainGame, {
 	aliases: ["unowns", "upc", "pokemonchain"],

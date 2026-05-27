@@ -49,15 +49,17 @@ export abstract class CardCloseFar extends CardHighLow {
 				}
 			}
 
+			if (this.awardCardChieve) this.awardCardChieve(winners);
+
 			len = winners.length;
 			const cards: ICard[] = [];
 			const winnersNames: string[] = [];
 			for (let i = 0; i < len; i++) {
 				cards.push(winners[i].card);
-				winnersNames.push(winners[i].player!.name);
-				let points = this.points.get(winners[i].player!) || 0;
+				winnersNames.push(winners[i].player.name);
+				let points = this.points.get(winners[i].player) || 0;
 				points++;
-				this.points.set(winners[i].player!, points);
+				this.points.set(winners[i].player, points);
 				if (!ended && points >= this.options.points!) ended = true;
 			}
 

@@ -1,13 +1,21 @@
 import type { Player } from "../room-activity";
-import type { IGameCachedData, IGameFile } from "../types/games";
+import type { IGameCachedData, IGameAchievement, IGameFile } from "../types/games";
 import type { INature, StatIDExceptHP } from "../types/pokemon-showdown";
 import { game as questionAndAnswerGame, QuestionAndAnswer } from './templates/question-and-answer';
 
+type AchievementNames = "naturescalling" | "captainnature";
 const MAX_VALID_NATURES = 2;
 
 class XatusNatureClusters extends QuestionAndAnswer {
+	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"naturescalling": {name: "Nature's Calling", type: 'all-answers', bits: 1000, description: "get every answer in one game"},
+		"captainnature": {name: "Captain Nature", type: 'all-answers-team', bits: 1000, mode: 'collectiveteam', 
+			description: "get every answer for your team and win the game"},
+	};
 	static cachedData: IGameCachedData = {};
 
+	allAnswersAchievement = XatusNatureClusters.achievements.naturescalling;
+	allAnswersTeamAchievement = XatusNatureClusters.achievements.captainnature;
 	hintPrefix: string = "Randomly generated nature";
 	oneGuessPerHint = true;
 	roundTime: number = 20 * 1000;

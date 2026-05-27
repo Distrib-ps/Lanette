@@ -1,6 +1,6 @@
 import type { Player } from "../../room-activity";
 import { ScriptedGame } from "../../room-game-scripted";
-import type { GameCommandDefinitions, IGameTemplateFile } from "../../types/games";
+import type { GameCommandDefinitions, IGameAchievement, IGameTemplateFile } from "../../types/games";
 import type { IAbility, IItem, IMove, IPokemon } from "../../types/pokemon-showdown";
 
 export type Link = IPokemon | IMove | IItem | IAbility;
@@ -8,6 +8,7 @@ export type Link = IPokemon | IMove | IItem | IAbility;
 export abstract class Chain extends ScriptedGame {
 	acceptsFormes: boolean = false;
 	canReverseLinks: boolean = false;
+	firstAnswer: Player | false | undefined;
 	keys: string[] = [];
 	letterBased: boolean = true;
 	linkEndCounts: Dict<number> = {};
@@ -25,6 +26,8 @@ export abstract class Chain extends ScriptedGame {
 	survivalRound: number = 0;
 	targetLinkEnds: string[] = [];
 	targetLinkStarts: string[] = [];
+
+	allAnswersAchievement?: IGameAchievement;
 
 	// always defined once the game starts
 	currentLink!: Link;
@@ -228,6 +231,7 @@ export abstract class Chain extends ScriptedGame {
 
 	onEnd(): void {
 		if (this.options.freejoin) {
+			if (this.allAnswersAchievement && this.firstAnswer) this.unlockAchievement(this.firstAnswer, this.allAnswersAchievement);
 			this.convertPointsToBits();
 		} else {
 			for (const i in this.players) {
@@ -327,6 +331,13 @@ const commands: GameCommandDefinitions<Chain> = {
 				this.points.set(player, points);
 				this.say('**' + player.name + '** advances to **' + points + '** point' + (points > 1 ? 's' : '') + '! A possible ' +
 					'answer was __' + possibleLink.name + '__.');
+				if (this.allAnswersAchievement) {
+					if (this.firstAnswer === undefined) {
+						this.firstAnswer = player;
+					} else if (this.firstAnswer && this.firstAnswer !== player) {
+						this.firstAnswer = false;
+					}
+				}
 				if (points === this.options.points) {
 					this.winners.set(player, points);
 					this.end();

@@ -1,11 +1,12 @@
 import type { Player } from "../room-activity";
 import { ScriptedGame } from "../room-game-scripted";
-import type { GameCommandDefinitions, IGameFile } from "../types/games";
+import type { GameCommandDefinitions, IGameAchievement, IGameFile } from "../types/games";
 import type { IParam, IParametersThreadData } from './../workers/parameters';
 
 const gameGen = 9;
 const genString = 'gen' + gameGen;
 
+type AchievementNames = "cuphead";
 type ParamType = 'color' | 'letter' | 'tier' | 'type';
 const paramTypes: ParamType[] = ['color', 'letter', 'tier', 'type'];
 const paramTypeDexesKeys: Dict<Dict<KeyedDict<ParamType, string[]>>> = {};
@@ -13,9 +14,13 @@ const paramTypeDexesKeys: Dict<Dict<KeyedDict<ParamType, string[]>>> = {};
 const searchTypes: (keyof IParametersThreadData)[] = ['pokemon'];
 
 class InkaysCups extends ScriptedGame {
+	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"cuphead": {name: "Cuphead", type: 'special', bits: 1000, description: 'get every answer in one game (free-join only)'},
+	};
 	answers: readonly string[] = [];
 	canGrab: boolean = false;
 	canLateJoin: boolean = true;
+	cuphead: Player | false | undefined;
 	points = new Map<Player, number>();
 	roundGuesses = new Map<Player, boolean>();
 	roundTime: number = 15 * 1000;
@@ -146,6 +151,7 @@ class InkaysCups extends ScriptedGame {
 	onEnd(): void {
 		if (this.options.freejoin) {
 			this.convertPointsToBits();
+			if (this.cuphead) this.unlockAchievement(this.cuphead, InkaysCups.achievements.cuphead);
 		} else {
 			for (const i in this.players) {
 				if (this.players[i].eliminated) continue;
@@ -207,6 +213,11 @@ const commands: GameCommandDefinitions<InkaysCups> = {
 				this.points.set(player, points);
 				this.say("**" + player.name + "** advances to **" + points + "** point" + (points > 1 ? "s" : "") + "! " +
 						this.getAnswers(answer));
+				if (this.cuphead === undefined) {
+					this.cuphead = player;
+				} else if (this.cuphead && this.cuphead !== player) {
+					this.cuphead = false;
+				}
 				if (points === this.options.points) {
 					for (const i in this.players) {
 						if (this.players[i] !== player) this.players[i].eliminated = true;

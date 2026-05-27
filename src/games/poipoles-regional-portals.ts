@@ -1,7 +1,9 @@
 import type { Player } from "../room-activity";
 import { ScriptedGame } from "../room-game-scripted";
 import type { LocationType, RegionName } from "../types/dex";
-import type { GameCommandDefinitions, IGameFile } from "../types/games";
+import type { GameCommandDefinitions, IGameAchievement, IGameFile } from "../types/games";
+
+type AchievementNames = "globetrotter";
 
 const BASE_TRAVELERS_PER_ROUND: number = 3;
 
@@ -12,8 +14,12 @@ const regionKeys: RegionName[] = [];
 const regionTypeKeys: Dict<LocationType[]> = {};
 
 class PoipolesRegionalPortals extends ScriptedGame {
+	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"globetrotter": {name: "Globetrotter", type: 'special', bits: 1000, description: 'answer first every round'},
+	};
 	baseTravelersPerRound: number = BASE_TRAVELERS_PER_ROUND;
 	canTravel: boolean = false;
+	globetrotter: Player | false | undefined;
 	inactiveRoundLimit: number = 5;
 	lastRegion: string = '';
 	lastType: string = '';
@@ -128,6 +134,8 @@ class PoipolesRegionalPortals extends ScriptedGame {
 	}
 
 	onEnd(): void {
+		if (this.globetrotter) this.unlockAchievement(this.globetrotter, PoipolesRegionalPortals.achievements.globetrotter);
+
 		this.convertPointsToBits();
 		this.announceWinners();
 	}
@@ -182,6 +190,13 @@ const commands: GameCommandDefinitions<PoipolesRegionalPortals> = {
 			points += BASE_TRAVELERS_PER_ROUND - this.roundTravels.size;
 			this.points.set(player, points);
 
+			if (!this.roundTravels.size) {
+				if (this.globetrotter === undefined) {
+					this.globetrotter = player;
+				} else if (this.globetrotter && this.globetrotter !== player) {
+					this.globetrotter = false;
+				}
+			}
 			this.roundTravels.add(player);
 			this.say(player.name + " is the **" + Tools.toNumberOrderString(this.roundTravels.size) + "** traveler!");
 

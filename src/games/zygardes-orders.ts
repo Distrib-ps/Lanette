@@ -2,17 +2,22 @@ import type { Player } from "../room-activity";
 import type { IGameAchievement, IGameCachedData, IGameFile } from "../types/games";
 import { game as questionAndAnswerGame, QuestionAndAnswer } from "./templates/question-and-answer";
 
-type AchievementNames = "tallorder";
+type AchievementNames = "cellsinorder" | "captaincellsinorder" | "tallorder";
 
 const MIN_LETTERS = 3;
 const MAX_LETTERS = 18;
 
 class ZygardesOrders extends QuestionAndAnswer {
 	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"cellsinorder": {name: "Cells in Order", type: 'all-answers', bits: 1000, description: "get every answer in one game"},
+		"captaincellsinorder": {name: "Captain Cells in Order", type: 'all-answers-team', bits: 1000, mode: 'collectiveteam', 
+			description: "get every answer for your team and win the game"},
 		"tallorder": {name: "Tall Order", type: 'special', bits: 1000, description: "guess the answer with only 1 letter revealed"},
 	};
 	static cachedData: IGameCachedData = {};
 
+	allAnswersAchievement = ZygardesOrders.achievements.cellsinorder;
+	allAnswersTeamAchievement = ZygardesOrders.achievements.captaincellsinorder;
 	allLetters: number = 0;
 	currentCategory: string = '';
 	guessedLetters: string[] = [];

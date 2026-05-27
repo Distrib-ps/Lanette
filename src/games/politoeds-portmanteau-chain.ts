@@ -1,12 +1,18 @@
-import type { IGameFile } from "../types/games";
+import type { IGameAchievement, IGameFile } from "../types/games";
 import { Chain, game as chainGame } from "./templates/chain";
 import type { Link } from "./templates/chain";
 
+type AchievementNames = "strongestlink";
+
 class PolitoedsPortmanteauChain extends Chain {
+	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"strongestlink": {name: "Strongest Link", type: 'special', bits: 1000, description: 'get every answer in one game (free-join only)'},
+	};
 	acceptsFormes: boolean = true;
 	canReverseLinks: boolean = true;
 	minLetters: number = 2;
 	maxLetters: number = 4;
+	allAnswersAchievement = PolitoedsPortmanteauChain.achievements.strongestlink;
 
 	getLinkStarts(link: Link): string[] {
 		const starts: string[] = [];

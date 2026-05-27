@@ -1,9 +1,10 @@
 import type { Player } from "../room-activity";
 import { ScriptedGame } from "../room-game-scripted";
-import type { GameCommandDefinitions, IGameFile } from "../types/games";
+import type { GameCommandDefinitions, IGameAchievement, IGameFile } from "../types/games";
 
 const minimumParameterResults = 15;
 
+type AchievementNames = "lordofthelinks";
 type DataTypes = 'pokemon' | 'moves';
 const data: {parameters: KeyedDict<DataTypes, Dict<string[]>>; parameterKeys: KeyedDict<DataTypes, string[]>} = {
 	parameters: {
@@ -17,12 +18,17 @@ const data: {parameters: KeyedDict<DataTypes, Dict<string[]>>; parameterKeys: Ke
 };
 
 class SerperiorLengthyChains extends ScriptedGame {
+	static achievements: KeyedDict<AchievementNames, IGameAchievement> = {
+		"lordofthelinks": {name: "Lord of the Links", type: 'special', bits: 1000, description: 'get every answer in one game'},
+	};
+
 	bestChain: string[] = [];
 	bestPlayer: Player | null = null;
 	canChain: boolean = false;
 	category: string = '';
 	dataType: DataTypes = 'pokemon';
 	inactiveRoundLimit: number = 5;
+	lordOfTheLinks: Player | false | undefined;
 	points = new Map<Player, number>();
 	roundTime = 15 * 1000;
 
@@ -112,6 +118,11 @@ class SerperiorLengthyChains extends ScriptedGame {
 				this.points.set(this.bestPlayer, points);
 				this.say("**" + this.bestPlayer.name + "** advances to " + points + " point" + (points > 1 ? "s" : "") + " with their " +
 					"chain " + "__" + this.bestChain.join(" + ") + "__!");
+				if (this.lordOfTheLinks === undefined) {
+					this.lordOfTheLinks = this.bestPlayer;
+				} else if (this.lordOfTheLinks && this.lordOfTheLinks !== this.bestPlayer) {
+					this.lordOfTheLinks = false;
+				}
 				if (points >= this.options.points!) {
 					this.winners.set(this.bestPlayer, points);
 					this.end();
