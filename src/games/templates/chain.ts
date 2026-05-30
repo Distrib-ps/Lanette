@@ -8,6 +8,7 @@ export type Link = IPokemon | IMove | IItem | IAbility;
 export abstract class Chain extends ScriptedGame {
 	acceptsFormes: boolean = false;
 	canReverseLinks: boolean = false;
+	customText: string = '';
 	firstAnswer: Player | false | undefined;
 	keys: string[] = [];
 	letterBased: boolean = true;
@@ -174,11 +175,11 @@ export abstract class Chain extends ScriptedGame {
 	}
 
 	async onNextRound(): Promise<void> {
-		let text;
+		let text = this.customText || "The [mascot] spelled out **[name]**.";
 		if (this.options.freejoin) {
 			this.resetLinkCounts();
 			this.setLink();
-			text = "The " + this.mascot!.name + " spelled out **" + this.currentLink.name + "**.";
+			text = text.replace("[name]", this.currentLink.name).replace("[mascot]", this.mascot!.name);
 			this.on(text, () => {
 				if (this.parentGame && this.parentGame.onChildHint) this.parentGame.onChildHint(this.currentLink.name, [], true);
 				this.setTimeout(() => {
@@ -215,7 +216,7 @@ export abstract class Chain extends ScriptedGame {
 				return;
 			}
 
-			text = currentPlayer.name + " you are up! The " + this.mascot!.name + " spelled out **" + this.currentLink.name + "**.";
+			text = currentPlayer.name + " you are up! " + text.replace("[name]", this.currentLink.name).replace("[mascot]", this.mascot!.name);
 			this.on(text, () => {
 				this.currentPlayer = currentPlayer!;
 				this.setTimeout(() => {
