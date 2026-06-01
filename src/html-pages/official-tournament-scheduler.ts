@@ -107,6 +107,34 @@ class OfficialTournamentScheduler extends HtmlPageBase {
 		return database;
 	}
 
+	timesToString(times: [number, number][]): string {
+		return times.map(t => t[0] + ":" + (t[1] < 10 ? "0" : "") + t[1]).join(", ");
+	}
+
+	getSelectedDayTimesString(): string {
+		const database = this.getDatabase();
+		const schedule = database.officialTournamentSchedule!.years[this.selectedYear];
+		if (!(this.selectedMonth in schedule.months) || !(this.selectedDay in schedule.months[this.selectedMonth].days)) return "(none)";
+		return this.timesToString(schedule.months[this.selectedMonth].days[this.selectedDay]!.times);
+	}
+
+	get selectedDateString(): string {
+		return this.selectedMonth + "/" + this.selectedDay + "/" + this.selectedYear;
+	}
+
+	logActivity(action: string): void {
+		const webhooks = Config.officialTournamentSchedulerWebhooks;
+		if (!webhooks || !(this.room.id in webhooks)) return;
+
+		const date = new Date();
+		const minutes = date.getMinutes();
+		const seconds = date.getSeconds();
+		const timestamp = date.getHours() + ":" + (minutes < 10 ? "0" : "") + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+
+		Tools.sendDiscordWebhook(webhooks[this.room.id],
+			"`[" + timestamp + "]` **" + this.room.title + " scheduler** — **" + this.userName + "** " + action);
+	}
+
 	chooseYearCommand(year: string): void {
 		const yearNumber = parseInt(year);
 		if (isNaN(yearNumber) || yearNumber < (this.currentYear - 1) || yearNumber > (this.currentYear + 1)) return;
@@ -168,10 +196,13 @@ class OfficialTournamentScheduler extends HtmlPageBase {
 		if (this.selectedMonth in schedule.months &&
 			schedule.months[this.selectedMonth].days[this.selectedDay]!.times.length < maxTournamentsPerDay) {
 			const times = schedule.months[this.selectedMonth].days[this.selectedDay]!.times;
+			const before = this.timesToString(times);
 			const lastScheduledTime = times[times.length - 1];
 			times.push([lastScheduledTime[0], lastScheduledTime[1] + 1]);
 
 			this.setOfficialTournament();
+			this.logActivity("added a tournament on " + this.selectedDateString + " | before: [" + before + "] after: [" +
+				this.timesToString(times) + "]");
 		}
 
 		this.send();
@@ -184,6 +215,8 @@ class OfficialTournamentScheduler extends HtmlPageBase {
 		const schedule = database.officialTournamentSchedule!.years[this.selectedYear];
 		if (this.selectedMonth in schedule.months &&
 			schedule.months[this.selectedMonth].days[this.selectedDay]!.times.length > 1) {
+			const removedIndex = this.selectedTournamentIndex;
+			const before = this.timesToString(schedule.months[this.selectedMonth].days[this.selectedDay]!.times);
 			schedule.months[this.selectedMonth].days[this.selectedDay]!.times.splice(this.selectedTournamentIndex, 1);
 			this.selectedTournamentIndex--;
 			if (this.selectedTournamentIndex < 0) this.selectedTournamentIndex = 0;
@@ -192,6 +225,8 @@ class OfficialTournamentScheduler extends HtmlPageBase {
 			this.tournamentTimeInput.parentSetInput(times[0] + ":" + (times[1] < 10 ? "0" : "") + times[1]);
 
 			this.setOfficialTournament();
+			this.logActivity("removed tournament #" + (removedIndex + 1) + " on " + this.selectedDateString + " | before: [" +
+				before + "] after: [" + this.getSelectedDayTimesString() + "]");
 		}
 
 		this.send();
@@ -203,11 +238,14 @@ class OfficialTournamentScheduler extends HtmlPageBase {
 		const database = this.getDatabase();
 		const schedule = database.officialTournamentSchedule!.years[this.selectedYear];
 		if (this.selectedMonth in schedule.months) {
-			if (schedule.months[this.selectedMonth].days[this.selectedDay]!.format === output) return;
+			const before = schedule.months[this.selectedMonth].days[this.selectedDay]!.format;
+			if (before === output) return;
 
 			schedule.months[this.selectedMonth].days[this.selectedDay]!.format = output;
 
 			this.setOfficialTournament();
+			this.logActivity("set the format on " + this.selectedDateString + " | before: [" + (before || "(none)") +
+				"] after: [" + (output || "(none)") + "]");
 		}
 
 		this.send();
@@ -263,10 +301,14 @@ class OfficialTournamentScheduler extends HtmlPageBase {
 				}
 			}
 
+			const before = this.timesToString(times);
 			times[this.selectedTournamentIndex][0] = hour;
 			times[this.selectedTournamentIndex][1] = minute;
 
 			this.setOfficialTournament();
+			this.logActivity("set the time of tournament #" + (this.selectedTournamentIndex + 1) + " on " + this.selectedDateString +
+				" to " + hour + ":" + (minute < 10 ? "0" : "") + minute + " | before: [" + before + "] after: [" +
+				this.timesToString(times) + "]");
 		}
 
 		this.send();
@@ -309,6 +351,8 @@ class OfficialTournamentScheduler extends HtmlPageBase {
 		};
 
 		this.chooseMonthCommand(month, true);
+		this.logActivity("added a new schedule for month " + month + "/" + this.selectedYear + " (default times: [" +
+			this.timesToString(times) + "])");
 
 		this.send();
 	}
@@ -505,7 +549,9 @@ export const commands: BaseCommandDefinitions = {
 			targets.shift();
 
 			if (!cmd) {
-				new OfficialTournamentScheduler(targetRoom, user).open();
+				const page = new OfficialTournamentScheduler(targetRoom, user);
+				page.logActivity("opened the scheduler page");
+				page.open();
 				return;
 			}
 

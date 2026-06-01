@@ -131,6 +131,7 @@ export function load(config: typeof Config): typeof Config {
 	if (config.tournamentGameRoomAdvertisements) {
 		config.tournamentGameRoomAdvertisements = objectKeysToRoomId(stringArrayObjectToRoomIds(config.tournamentGameRoomAdvertisements));
 	}
+	if (config.officialTournamentSchedulerWebhooks) objectKeysToRoomId(config.officialTournamentSchedulerWebhooks);
 	if (config.randomTournamentTimers) objectKeysToRoomId(config.randomTournamentTimers);
 	if (config.tournamentRules) objectKeysToRoomId(config.tournamentRules);
 	if (config.allowUserHostedTournaments) config.allowUserHostedTournaments = arrayToRoomIds(config.allowUserHostedTournaments);

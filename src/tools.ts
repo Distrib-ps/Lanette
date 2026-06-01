@@ -1389,6 +1389,64 @@ export class Tools {
 		this.lastGithubApiCall = Date.now();
 	}
 
+
+	sendDiscordWebhook(webhookUrl: string, content: string): void {
+		if (!webhookUrl || !content) return;
+
+		let parsedUrl: url.URL;
+		try {
+			parsedUrl = new url.URL(webhookUrl);
+		} catch (e) {
+			console.log("Failed to parse Discord webhook URL: " + (e as Error).message);
+			return;
+		}
+
+		if (!parsedUrl.hostname || !parsedUrl.pathname) {
+			console.log("Failed to parse Discord webhook URL");
+			return;
+		}
+
+		// Discord limits message content to 2000 characters
+		if (content.length > 1900) content = content.substr(0, 1900) + "...";
+
+		const postData = JSON.stringify({content});
+
+		const options = {
+			hostname: parsedUrl.hostname,
+			path: parsedUrl.pathname + parsedUrl.search,
+			method: "POST",
+			headers: {
+				'Content-Type': 'application/json',
+				'Content-Length': Buffer.byteLength(postData),
+				'User-Agent': 'Lanette',
+			},
+		};
+
+		const request = https.request(options, response => {
+			response.setEncoding('utf8');
+			let data = '';
+			response.on('data', chunk => {
+				data += chunk;
+			});
+			response.on('error', error => {
+				console.log("Error during Discord webhook response: " + error.stack);
+			});
+			response.on('end', () => {
+				if (response.statusCode && (response.statusCode < 200 || response.statusCode >= 300)) {
+					console.log("Discord webhook returned " + response.statusCode + ": " + response.statusMessage);
+					console.log(data);
+				}
+			});
+		});
+
+		request.on('error', error => {
+			console.log("Error during Discord webhook request: " + error.stack);
+		});
+
+		request.write(postData);
+		request.end();
+	}
+
 	updatePokemonShowdown(fetchClientData?: boolean, attempt?: number): void {
 		if (attempt && attempt > UPDATE_POKEMON_SHOWDOWN_ATTEMPTS) return;
 

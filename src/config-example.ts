@@ -219,6 +219,12 @@ export let tournamentRoomAdvertisements: Dict<string[]> = {};
 export let tournamentGameRoomAdvertisements: Dict<string[]> = {};
 
 /**
+ * For each room in the object, a Discord webhook URL where official tournament scheduler activity
+ * (opening the page and editing the schedule) will be logged
+ */
+export let officialTournamentSchedulerWebhooks: Dict<string> = {};
+
+/**
  * The number of minutes to set for the auto DQ timer in tournaments
  */
 export let tournamentAutoDQTimers: Dict<number> = {};
