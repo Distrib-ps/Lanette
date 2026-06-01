@@ -212,7 +212,7 @@ export const formatLinks: Dict<IFormatDataLinks> = {
 	},
 	'gen7zu': {
 		info: 'https://www.smogon.com/dex/sm/formats/zu',
-		teams: 'https://www.smogon.com/forums/threads/3611496/#post-7503186',
+		teams: 'https://www.smogon.com/forums/threads/sm-zu-sample-teams.3646739/',
 		viability: 'https://www.smogon.com/forums/threads/3614892',
 	},
 	'gen7lc': {
