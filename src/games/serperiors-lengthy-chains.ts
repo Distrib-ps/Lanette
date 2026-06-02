@@ -149,6 +149,7 @@ class SerperiorLengthyChains extends ScriptedGame {
 	}
 
 	onEnd(): void {
+		if (this.lordOfTheLinks) this.unlockAchievement(this.lordOfTheLinks, SerperiorLengthyChains.achievements.lordofthelinks);
 		this.convertPointsToBits();
 		this.announceWinners();
 	}
