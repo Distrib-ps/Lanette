@@ -148,7 +148,7 @@ export const game: IGameFile<MagnezonesMalfunctions> = {
     class: MagnezonesMalfunctions,
     commandDescriptions: [Config.commandCharacter + CUT_COMMAND + " [wire number]"],
     commands,
-    description: "Players cut wires to help the malfunctioning Magnezone! However, cutting the wrong wire wil result in elimination!",
+    description: "Players cut wires to help the malfunctioning Magnezone! However, cutting the wrong wire will result in elimination!",
     name: "Magnezone's Malfunctions",
     mascot: "Magnezone",
     scriptedOnly: true,
