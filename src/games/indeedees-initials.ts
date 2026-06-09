@@ -1,11 +1,14 @@
-import type { IGameCachedData, IGameFile } from "../types/games";
+import { assert } from "../test/test-tools";
+import type { GameFileTests, IGameCachedData, IGameFile } from "../types/games";
 import { game as questionAndAnswerGame, QuestionAndAnswer } from './templates/question-and-answer';
 
 function getInitials(word: string): string | null {
+    if (/\d/.test(word)) return '';
+
     let initials = "";
     for (let i = 0; i < word.length; i++) {
-        if (/\d/.test(word.charAt(i))) return '';
         if (/[A-Z]/.test(word.charAt(i))) initials += word.charAt(i);
+        if (i && /[a-z]/.test(word.charAt(i)) && !/[A-Za-z]/.test(word.charAt(i - 1))) initials += word.charAt(i);
     }
     if (initials.length < 2) return '';
     return initials;
@@ -87,6 +90,14 @@ class IndeedeesInitials extends QuestionAndAnswer {
     }
 }
 
+const tests: GameFileTests<IndeedeesInitials> = {
+    'should handle lowercase letters': {
+        test(): void {
+            assert(IndeedeesInitials.cachedData.categoryHintKeys!["Pokemon Abilities"].includes("BoR"));
+        },
+    },
+};
+
 export const game: IGameFile<IndeedeesInitials> = Games.copyTemplateProperties(questionAndAnswerGame, {
     aliases: ['indeedees', 'initials', 'ii'],
     category: 'identification-1',
@@ -99,6 +110,7 @@ export const game: IGameFile<IndeedeesInitials> = Games.copyTemplateProperties(q
     minigameCommand: 'initial',
     minigameDescription: "Use <code>" + Config.commandCharacter + "g</code> to guess an answer with the given initials!",
     modes: ["abridged", "collectiveteam", "multianswer", "pmtimeattack", "prolix", "spotlightteam", "survival", "timeattack"],
+    tests: Object.assign({}, questionAndAnswerGame.tests, tests),
     variants: [
         {
             name: "Indeedee's Ability Initials",
