@@ -28,7 +28,7 @@ export const pages: Dict<OfficialTournamentScheduler> = {};
 const defaultTime: [number, number][] = [[2, 30], [9, 30], [15, 30], [20, 30]];
 const defaultTimes: Dict<Dict<[number, number][]>> = {
 	'showdown': {
-		'tournaments': defaultTime,
+		'tournaments': [[2, 30], [9, 30], [15, 30], [20, 30]],
 		'toursplaza': [[5, 30], [12, 30], [18, 30], [23, 30]],
 	},
 };
