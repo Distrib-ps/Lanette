@@ -2165,29 +2165,35 @@ export class Dex {
 		subsetSeparatedRules: ISeparatedCustomRules): boolean {
 		const ruleTable = this.getRuleTable(format);
 
+		// validateRule() throws if a rule cannot be matched (e.g. a format name that ended up in the
+		// custom rules); an unvalidatable rule simply means the format does not contain it, so treat
+		// it as not present instead of letting the exception break callers like getCustomFormatName()
+		const inTable = (rule: string): boolean => {
+			try {
+				return this.checkValidatedRuleInTable(ruleTable, this.validateRule(rule));
+			} catch {
+				return false;
+			}
+		};
+
 		for (const ban of subsetSeparatedRules.addedbans) {
-			if (!baseSeparatedRules.addedbans.includes(ban) &&
-				!this.checkValidatedRuleInTable(ruleTable, this.validateRule('-' + ban))) return false;
+			if (!baseSeparatedRules.addedbans.includes(ban) && !inTable('-' + ban)) return false;
 		}
 
 		for (const ban of subsetSeparatedRules.removedbans) {
-			if (!baseSeparatedRules.removedbans.includes(ban) &&
-				!this.checkValidatedRuleInTable(ruleTable, this.validateRule('+' + ban))) return false;
+			if (!baseSeparatedRules.removedbans.includes(ban) && !inTable('+' + ban)) return false;
 		}
 
 		for (const restriction of subsetSeparatedRules.addedrestrictions) {
-			if (!baseSeparatedRules.addedrestrictions.includes(restriction) &&
-				!this.checkValidatedRuleInTable(ruleTable, this.validateRule('*' + restriction))) return false;
+			if (!baseSeparatedRules.addedrestrictions.includes(restriction) && !inTable('*' + restriction)) return false;
 		}
 
 		for (const rule of subsetSeparatedRules.addedrules) {
-			if (!baseSeparatedRules.addedrules.includes(rule) &&
-				!this.checkValidatedRuleInTable(ruleTable, this.validateRule(rule))) return false;
+			if (!baseSeparatedRules.addedrules.includes(rule) && !inTable(rule)) return false;
 		}
 
 		for (const rule of subsetSeparatedRules.removedrules) {
-			if (!baseSeparatedRules.removedrules.includes(rule) &&
-				!this.checkValidatedRuleInTable(ruleTable, this.validateRule('!' + rule))) return false;
+			if (!baseSeparatedRules.removedrules.includes(rule) && !inTable('!' + rule)) return false;
 		}
 
 		return true;
