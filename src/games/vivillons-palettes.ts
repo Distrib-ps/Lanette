@@ -90,6 +90,6 @@ export const game: IGameFile<VivillonsPalettes> = Games.copyTemplateProperties(q
 		'Vivillon-River', 'Vivillon-Sandstorm', 'Vivillon-Savanna', 'Vivillon-Sun', 'Vivillon-Tundra', 'Vivillon-Fancy', 'Vivillon-Pokeball'],
 	mascotPrefix: "Vivillon's",
 	minigameCommand: 'palette',
-	minigameDescription: "Use <code>" + Config.commandCharacter + "g</code> to guess the colors shared by the given Pokemon!",
+	minigameDescription: "Use <code>" + Config.commandCharacter + "g</code> to guess the three colors shared by the given Pokemon!",
 	modes: ["collectiveteam", "pmtimeattack", "spotlightteam", "survival", "timeattack"],
 });
