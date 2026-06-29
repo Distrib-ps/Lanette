@@ -8,7 +8,7 @@ function getInitials(word: string): string | null {
     let initials = "";
     for (let i = 0; i < word.length; i++) {
         if (/[A-Z]/.test(word.charAt(i))) initials += word.charAt(i);
-        if (i && /[a-z]/.test(word.charAt(i)) && !/[A-Za-z]/.test(word.charAt(i - 1))) initials += word.charAt(i);
+        if (i && /[a-z]/.test(word.charAt(i)) && /[- ]/.test(word.charAt(i - 1))) initials += word.charAt(i);
     }
     if (initials.length < 2) return '';
     return initials;
