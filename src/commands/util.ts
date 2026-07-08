@@ -687,7 +687,7 @@ export const commands: BaseCommandDefinitions = {
 			const colors = Dex.getData().colors;
 			this.say('Randomly generated color: **' + colors[Tools.sampleOne(Object.keys(colors))] + '**');
 		},
-		aliases: ['rcolor', 'randcolour', 'rcolour'],
+		aliases: ['randcolor', 'rcolor', 'randomcolour', 'randcolour', 'rcolour'],
 		description: ["generates a random color"],
 	},
 	randomegggroup: {
