@@ -826,14 +826,7 @@ export const commands: BaseCommandDefinitions = {
 				id = user.id;
 			}
 
-			const database = Storage.getDatabase(targetRoom);
-			const unlockedAchievements: string[] = [];
-			const achievements = Games.getAchievements();
-			if (database.gameAchievements && id in database.gameAchievements) {
-				for (const achievement of database.gameAchievements[id]) {
-					if (achievement in achievements) unlockedAchievements.push(achievements[achievement].name);
-				}
-			}
+			const unlockedAchievements = Games.getUserAchievements(targetRoom, id);
 			if (!unlockedAchievements.length) {
 				return this.say((id === user.id ? "You have" : name + " has") + " not unlocked any game achievements in " +
 					targetRoom.title + ".");

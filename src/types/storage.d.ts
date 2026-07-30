@@ -67,6 +67,7 @@ export interface IGameTrainerCard {
 	background?: HexCode | IHexCodeData;
 	customAvatar?: boolean;
 	pokemonGifs?: boolean;
+	title?: string;
 }
 
 export interface ICustomBorder {

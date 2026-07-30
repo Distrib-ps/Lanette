@@ -1820,6 +1820,9 @@ export class Games {
 				html += '&nbsp;&bull;&nbsp;<b>' + bits + ' bits</b>';
 			}
 		}
+		if (trainerCard.title) {
+			html += "<br />" + trainerCard.title;
+		}
 		html += "<hr /><span style='display: block;height:115px";
 		if (trainerCard.background) {
 			if (typeof trainerCard.background === 'string') {
@@ -2170,6 +2173,21 @@ export class Games {
 		html += Client.getUserAttributionHtml((randomized ? "Randomized by " : "") + host);
 
 		return html;
+	}
+
+	getUserAchievements(room: Room, user: string): string[] {
+		const database = Storage.getDatabase(room);
+		const unlockedAchievements: string[] = [];
+		const achievements = this.getAchievements();
+		const id = Tools.toId(user);
+
+		if (database.gameAchievements && id in database.gameAchievements) {
+			for (const achievement of database.gameAchievements[id]) {
+				if (achievement in achievements) unlockedAchievements.push(achievements[achievement].name);
+			}
+		}
+
+		return unlockedAchievements;
 	}
 
 	updateGameCatalog(room: Room): void {

@@ -15,9 +15,12 @@ const previewCommand = 'preview';
 const chooseBackgroundColorPicker = 'choosebackgroundcolorpicker';
 const chooseTrainerPicker = 'choosetrainerpicker';
 const choosePokemonPicker = 'choosepokemonpicker';
+const chooseTitlePicker = 'choosetitlepicker';
 const setBackgroundColorCommand = 'setbackgroundcolor';
 const setPokemonCommand = 'setpokemon';
 const setTrainerCommand = 'settrainer';
+const setTitleCommand = 'settitle';
+const clearTitleCommand = 'cleartitle';
 
 export const pageId = 'game-trainer-card';
 export const pages: Dict<GameTrainerCard> = {};
@@ -25,7 +28,7 @@ export const pages: Dict<GameTrainerCard> = {};
 class GameTrainerCard extends HtmlPageBase {
 	pageId = pageId;
 
-	currentPicker: 'background' | 'trainer' | 'pokemon' = 'background';
+	currentPicker: 'background' | 'trainer' | 'pokemon' | 'title' = 'background';
 	currentPokemon: PokemonChoices = [];
 
 	backgroundColorPicker: ColorPicker;
@@ -98,6 +101,7 @@ class GameTrainerCard extends HtmlPageBase {
 		if (this.currentPicker === 'background') return;
 
 		this.backgroundColorPicker.active = true;
+		this.pokemonPicker.active = false;
 		this.trainerPicker.active = false;
 		this.currentPicker = 'background';
 
@@ -108,6 +112,7 @@ class GameTrainerCard extends HtmlPageBase {
 		if (this.currentPicker === 'trainer') return;
 
 		this.trainerPicker.active = true;
+		this.pokemonPicker.active = false;
 		this.backgroundColorPicker.active = false;
 		this.currentPicker = 'trainer';
 
@@ -121,6 +126,17 @@ class GameTrainerCard extends HtmlPageBase {
 		this.backgroundColorPicker.active = false;
 		this.trainerPicker.active = false;
 		this.currentPicker = 'pokemon';
+
+		this.send();
+	}
+
+	chooseTitlePicker(): void {
+		if (this.currentPicker === 'title') return;
+
+		this.pokemonPicker.active = false;
+		this.backgroundColorPicker.active = false;
+		this.trainerPicker.active = false;
+		this.currentPicker = 'title';
 
 		this.send();
 	}
@@ -167,6 +183,20 @@ class GameTrainerCard extends HtmlPageBase {
 		if (!dontRender) this.send();
 	}
 
+	clearTitle(dontRender?: boolean): void {
+		const database = this.getDatabase();
+		delete database.gameTrainerCards![this.userId].title;
+
+		if (!dontRender) this.send();
+	}
+
+	selectTitle(title: string, dontRender?: boolean): void {
+		const database = this.getDatabase();
+		database.gameTrainerCards![this.userId].title = title;
+
+		if (!dontRender) this.send();
+	}
+
 	clearPokemonInput(): void {
 		this.currentPokemon = [];
 
@@ -206,9 +236,13 @@ class GameTrainerCard extends HtmlPageBase {
 		html += "<br />";
 		html += "</center>";
 
+		const database = this.getDatabase();
+		const currentTitle = database.gameTrainerCards![this.userId].title;
+
 		const background = this.currentPicker === 'background';
 		const trainer = this.currentPicker === 'trainer';
 		const pokemon = this.currentPicker === 'pokemon';
+		const title = this.currentPicker === 'title';
 
 		html += this.getQuietPmButton(this.commandPrefix + ", " + chooseBackgroundColorPicker, "Background",
 			{selectedAndDisabled: background});
@@ -218,6 +252,8 @@ class GameTrainerCard extends HtmlPageBase {
 			html += "&nbsp;" + this.getQuietPmButton(this.commandPrefix + ", " + choosePokemonPicker, "Pokemon",
 				{selectedAndDisabled: pokemon});
 		}
+		html += "&nbsp;" + this.getQuietPmButton(this.commandPrefix + ", " + chooseTitlePicker, "Title",
+			{selectedAndDisabled: title});
 		html += "<br /><br />";
 
 		if (background) {
@@ -225,9 +261,18 @@ class GameTrainerCard extends HtmlPageBase {
 			html += this.backgroundColorPicker.render();
 		} else if (trainer) {
 			html += this.trainerPicker.render();
-		} else {
+		} else if (pokemon) {
 			html += "<b>Pokemon icon</b><br />";
 			html += this.pokemonPicker.render();
+		} else {
+			html += "<b>Title</b><br />";
+			html += this.getQuietPmButton(this.commandPrefix + ", " + clearTitleCommand, "None",
+				{selectedAndDisabled: !currentTitle});
+			const achievements = Games.getUserAchievements(this.room, this.userId).toSorted();
+			for (const achievement of achievements) {
+				html += "&nbsp;" + this.getQuietPmButton(this.commandPrefix + ", " + setTitleCommand + ", " + achievement, achievement,
+					{selectedAndDisabled: currentTitle === achievement});
+			}
 		}
 
 		html += "</div>";
@@ -309,6 +354,16 @@ export const commands: BaseCommandDefinitions = {
 				pages[user.id].chooseTrainerPicker();
 			} else if (cmd === choosePokemonPicker) {
 				pages[user.id].choosePokemonPicker();
+			} else if (cmd === chooseTitlePicker) {
+				pages[user.id].chooseTitlePicker();
+			} else if (cmd === setTitleCommand) {
+				const achievement = targets[0].trim();
+				if (!Games.getUserAchievements(targetRoom, user.id).includes(achievement)) {
+					return this.say("Achievement does not exist or you do not have this achievement.");
+				}
+				pages[user.id].selectTitle(achievement);
+			} else if (cmd === clearTitleCommand) {
+				pages[user.id].clearTitle();
 			} else if (cmd === CLOSE_COMMAND) {
 				if (user.id in pages) pages[user.id].close();
 			} else {
