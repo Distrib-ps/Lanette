@@ -1323,6 +1323,8 @@ export const commands: BaseCommandDefinitions = {
 
 			const possibleCommand = message.split(" ")[0];
 
+			if (Tools.toId(possibleCommand).startsWith("store")) return this.say("You cannot store this command.");
+
 			if (message.startsWith('/') || (message.startsWith('!') && possibleCommand !== '!pick')) {
 				return this.say("You cannot store a server command.");
 			}
