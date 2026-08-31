@@ -129,6 +129,11 @@ export let developers: string[] = [];
 export let allowTournaments: string[] = [];
 
 /**
+ * For each room in the object, the minimum rank required to create tournaments (defaults to driver)
+ */
+export let tournamentCreationRanks: Dict<GroupName> = {};
+
+/**
  * A list of rooms (roomids) where regular tournaments will award leaderboard points
  */
 export let rankedTournaments: string[] = [];

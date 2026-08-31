@@ -227,13 +227,13 @@ export const commands: BaseCommandDefinitions = {
 				const targetRoom = Rooms.search(targets[0]);
 				if (!targetRoom) return this.sayError(['invalidBotRoom', targets[0]]);
 				targets.shift();
-				if (!user.hasRank(targetRoom, 'moderator') && !Tournaments.canCreateTournament(targetRoom, user)) return;
+				if (!user.hasRank(targetRoom, 'moderator') && !Tournaments.canScheduleTournaments(targetRoom, user)) return;
 				if (!Config.allowTournaments || !Config.allowTournaments.includes(targetRoom.id)) {
 					return this.sayError(['disabledTournamentFeatures', targetRoom.title]);
 				}
 				tournamentRoom = targetRoom;
 			} else {
-				if (!user.hasRank(room, 'moderator') && !Tournaments.canCreateTournament(room, user)) return;
+				if (!user.hasRank(room, 'moderator') && !Tournaments.canScheduleTournaments(room, user)) return;
 				if (!Config.allowTournaments || !Config.allowTournaments.includes(room.id)) {
 					return this.sayError(['disabledTournamentFeatures', room.title]);
 				}

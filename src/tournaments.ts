@@ -256,6 +256,15 @@ export class Tournaments {
 	canCreateTournament(room: Room, user: User): boolean {
 		const database = Storage.getDatabase(room);
 		if (database.tournamentManagers && database.tournamentManagers.includes(user.id)) return true;
+		if (Config.tournamentCreationRanks && room.id in Config.tournamentCreationRanks) {
+			return user.hasRank(room, Config.tournamentCreationRanks[room.id]);
+		}
+		return user.hasRank(room, 'driver');
+	}
+
+	canScheduleTournaments(room: Room, user: User): boolean {
+		const database = Storage.getDatabase(room);
+		if (database.tournamentManagers && database.tournamentManagers.includes(user.id)) return true;
 		return user.hasRank(room, 'driver');
 	}
 

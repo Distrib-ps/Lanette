@@ -92,6 +92,7 @@ export function load(config: typeof Config): typeof Config {
 	if (config.awardedBotGreetingDurations) objectKeysToRoomId(config.awardedBotGreetingDurations);
 
 	if (config.allowTournaments) config.allowTournaments = arrayToRoomIds(config.allowTournaments);
+	if (config.tournamentCreationRanks) objectKeysToRoomId(config.tournamentCreationRanks);
 	if (config.rankedTournaments) config.rankedTournaments = arrayToRoomIds(config.rankedTournaments);
 	if (config.rankedCustomTournaments) config.rankedCustomTournaments = arrayToRoomIds(config.rankedCustomTournaments);
 	if (config.manualRankedTournaments) config.manualRankedTournaments = arrayToRoomIds(config.manualRankedTournaments);
