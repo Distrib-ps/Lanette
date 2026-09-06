@@ -842,6 +842,7 @@ export class Tournaments {
 
 		const currentGenMod = Dex.getCurrentGenMod();
 		const validFormats: IFormat[] = [];
+		const unusedFormats: IFormat[] = [];
 		for (const i of formatsPool) {
 			const format = this.getFormat(i, room);
 			if (!format || !format.tournamentPlayable || (officialFormat && officialFormat.id === format.id) ||
@@ -855,11 +856,23 @@ export class Tournaments {
 			}
 
 			validFormats.push(format);
+			if (!pastTournamentIds.includes(format.id)) unusedFormats.push(format);
 		}
 
 		if (!validFormats.length) return;
 
-		let format = Tools.sampleOne(validFormats);
+		let formatPool = validFormats;
+		if (unusedFormats.length) {
+			formatPool = unusedFormats;
+		} else if (pastTournamentIds.length) {
+			const notMostRecent: IFormat[] = [];
+			for (const validFormat of validFormats) {
+				if (validFormat.id !== pastTournamentIds[0]) notMostRecent.push(validFormat);
+			}
+			if (notMostRecent.length) formatPool = notMostRecent;
+		}
+
+		let format = Tools.sampleOne(formatPool);
 		if (canAddCustomRules && Config.randomTournamentCustomRules && room.id in Config.randomTournamentCustomRules) {
 			const rules = Tools.shuffle(Config.randomTournamentCustomRules[room.id]);
 			for (const rule of rules) {
