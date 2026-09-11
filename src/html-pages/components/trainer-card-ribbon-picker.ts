@@ -30,6 +30,7 @@ export class TrainerCardRibbonPicker extends PickerBase {
 	getChoiceButtonHtml(id: string): string {
 		if (this.props.database.tournamentTrainerCardRibbons && id in this.props.database.tournamentTrainerCardRibbons) {
 			const ribbon = this.props.database.tournamentTrainerCardRibbons[id];
+			if (!Tools.isSafeImageSource(ribbon.source)) return ribbon.name;
 			return "<img src='" + ribbon.source + "' width=" + ribbon.width + "px height=" + ribbon.height + "px /><br />" + ribbon.name;
 		}
 

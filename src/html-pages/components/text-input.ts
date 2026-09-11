@@ -85,12 +85,14 @@ export class TextInput<OutputType = string> extends ComponentBase<ITextInputProp
 		}
 	}
 
+	/**Remove the characters that are not allowed in the input's value */
+	stripInput(input: string): string {
+		if (this.props.stripHtmlCharacters) return Tools.stripHtmlCharacters(input);
+		return Tools.stripHtmlTagCharacters(input);
+	}
+
 	submit(input: string): void {
-		if (this.props.stripHtmlCharacters) {
-			input = Tools.stripHtmlCharacters(input);
-		} else {
-			input = Tools.stripHtmlTagCharacters(input);
-		}
+		input = this.stripInput(input);
 
 		this.currentInput = Tools.unescapeHTML(input);
 		this.errors = [];

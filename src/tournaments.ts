@@ -1134,7 +1134,8 @@ export class Tournaments {
 	}
 
 	getBadgeHtml(database: IDatabase, id: string): string {
-		if (database.tournamentTrainerCardBadges && id in database.tournamentTrainerCardBadges) {
+		if (database.tournamentTrainerCardBadges && id in database.tournamentTrainerCardBadges &&
+			Tools.isSafeImageSource(database.tournamentTrainerCardBadges[id].source)) {
 			return '<img src="' + database.tournamentTrainerCardBadges[id].source + '" ' +
 				'width=' + database.tournamentTrainerCardBadges[id].width + 'px ' +
 				'height=' + database.tournamentTrainerCardBadges[id].height + 'px ' +
@@ -1145,7 +1146,8 @@ export class Tournaments {
 	}
 
 	getRibbonHtml(room: Room, database: IDatabase, id: string): string {
-		if (database.tournamentTrainerCardRibbons && id in database.tournamentTrainerCardRibbons) {
+		if (database.tournamentTrainerCardRibbons && id in database.tournamentTrainerCardRibbons &&
+			Tools.isSafeImageSource(database.tournamentTrainerCardRibbons[id].source)) {
 			return '<img src="' + database.tournamentTrainerCardRibbons[id].source + '" ' +
 				'width=' + database.tournamentTrainerCardRibbons[id].width + 'px ' +
 				'height=' + database.tournamentTrainerCardRibbons[id].height + 'px ' +
@@ -1153,7 +1155,8 @@ export class Tournaments {
 		}
 
 		if (Config.tournamentPointsShopRibbons && room.id in Config.tournamentPointsShopRibbons &&
-			id in Config.tournamentPointsShopRibbons[room.id]) {
+			id in Config.tournamentPointsShopRibbons[room.id] &&
+			Tools.isSafeImageSource(Config.tournamentPointsShopRibbons[room.id][id].source)) {
 			return '<img src="' + Config.tournamentPointsShopRibbons[room.id][id].source + '" ' +
 				'width=' + TRAINER_BADGE_DIMENSIONS + 'px ' +
 				'height=' + TRAINER_BADGE_DIMENSIONS + 'px ' +

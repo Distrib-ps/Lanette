@@ -2,6 +2,7 @@ import type { IComponentProps } from "./component-base";
 import { ComponentBase } from "./component-base";
 import { TextInput } from "./text-input";
 import type { HtmlPageBase } from "../html-page-base";
+import { ImageSourceTextInput } from "./image-source-text-input";
 import { NumberTextInput } from "./number-text-input";
 
 const updateNameCommand = "updatename";
@@ -24,7 +25,7 @@ export class TrainerCardPrize extends ComponentBase<ITrainerCardPrizeProps> {
 	name: string = "";
 
 	nameInput: TextInput;
-	sourceInput: TextInput;
+	sourceInput: ImageSourceTextInput;
 	widthInput: NumberTextInput;
 	heightInput: NumberTextInput;
 
@@ -40,7 +41,7 @@ export class TrainerCardPrize extends ComponentBase<ITrainerCardPrizeProps> {
 			reRender: () => this.props.reRender(),
 		});
 
-		this.sourceInput = new TextInput(htmlPage, this.commandPrefix, updateSourceCommand, {
+		this.sourceInput = new ImageSourceTextInput(htmlPage, this.commandPrefix, updateSourceCommand, {
 			label: "Source",
 			name: "Source",
 			hideClearButton: true,

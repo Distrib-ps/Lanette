@@ -28,6 +28,8 @@ const SPACE_REGEX = /\s/g;
 const APOSTROPHE_REGEX = /[/']/g;
 const HTML_CHARACTER_REGEX = /[<>/\\'"]/g;
 const HTML_TAG_CHARACTER_REGEX = /[<>/\\]/g;
+const UNSAFE_IMAGE_SOURCE_CHARACTER_REGEX = /[<>\\'"\s]/g;
+const IMAGE_SOURCE_REGEX = /^https:\/\/[^\s<>'"\\]+$/;
 const UNSAFE_API_CHARACTER_REGEX = /[^A-Za-z0-9 ,.%&'"!?()[\]`_<>/|:;=+-@]/g;
 const HEX_CODE_REGEX = /^[abcdef0123456789]+$/g;
 
@@ -840,6 +842,16 @@ export class Tools {
 
 	stripHtmlTagCharacters(input: string): string {
 		return input.replace(HTML_TAG_CHARACTER_REGEX, '').trim();
+	}
+
+	/**Remove the characters that could break out of an image's src attribute, leaving the rest of the URL intact */
+	stripImageSourceCharacters(input: string): string {
+		return input.replace(UNSAFE_IMAGE_SOURCE_CHARACTER_REGEX, '').trim();
+	}
+
+	/**Check that the input can safely be used as an image's src attribute in room HTML */
+	isSafeImageSource(input: string): boolean {
+		return IMAGE_SOURCE_REGEX.test(input);
 	}
 
 	joinList(list: readonly string[], preFormatting?: string | null, postFormatting?: string | null, conjunction?: string): string {

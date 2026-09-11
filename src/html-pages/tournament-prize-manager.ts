@@ -10,11 +10,13 @@ const baseCommandAlias = 'tpm';
 const chooseBadgesCommand = 'choosebadges';
 const chooseRibbonsCommand = 'chooseribbons';
 const startAddBadgeCommand = 'startaddbadge';
+const cancelAddBadgeCommand = 'canceladdbadge';
 const saveBadgeCommand = 'savebadge';
 const startBadgeUpdateCommand = 'startbadgeupdate';
 const cancelBadgeUpdateCommand = 'cancelbadgeupdate';
 const saveBadgeUpdateCommand = 'savebadgeupdate';
 const startAddRibbonCommand = 'startaddribbon';
+const cancelAddRibbonCommand = 'canceladdribbon';
 const saveRibbonCommand = 'saveribbon';
 const startRibbonUpdateCommand = 'startribbonupdate';
 const cancelRibbonUpdateCommand = 'cancelribbonupdate';
@@ -130,41 +132,49 @@ class TournamentPrizeManager extends HtmlPageBase {
 
 	setNewBadgeName(output: string): void {
 		this.newBadgeName = output;
+		this.addBadgeError = "";
 		this.send();
 	}
 
 	setNewBadgeSource(output: string): void {
 		this.newBadgeSource = output;
+		this.addBadgeError = "";
 		this.send();
 	}
 
 	setNewBadgeWidth(output: number): void {
 		this.newBadgeWidth = output;
+		this.addBadgeError = "";
 		this.send();
 	}
 
 	setNewBadgeHeight(output: number): void {
 		this.newBadgeHeight = output;
+		this.addBadgeError = "";
 		this.send();
 	}
 
 	setNewRibbonName(output: string): void {
 		this.newRibbonName = output;
+		this.addRibbonError = "";
 		this.send();
 	}
 
 	setNewRibbonSource(output: string): void {
 		this.newRibbonSource = output;
+		this.addRibbonError = "";
 		this.send();
 	}
 
 	setNewRibbonWidth(output: number): void {
 		this.newRibbonWidth = output;
+		this.addRibbonError = "";
 		this.send();
 	}
 
 	setNewRibbonHeight(output: number): void {
 		this.newRibbonHeight = output;
+		this.addRibbonError = "";
 		this.send();
 	}
 
@@ -217,6 +227,14 @@ class TournamentPrizeManager extends HtmlPageBase {
 		this.send();
 	}
 
+	cancelAddBadge(): void {
+		if (this.currentPicker !== 'badges' || !this.addingBadge) return;
+
+		this.addingBadge = false;
+		this.addBadgeError = "";
+		this.send();
+	}
+
 	saveBadge(): void {
 		if (this.currentPicker !== 'badges' || !this.addingBadge || !this.newBadgeName || !this.newBadgeSource || !this.newBadgeWidth ||
 			!this.newBadgeHeight) return;
@@ -233,6 +251,12 @@ class TournamentPrizeManager extends HtmlPageBase {
 
 		if (id in database.tournamentTrainerCardBadges) {
 			this.addBadgeError = "A badge with the name '" + database.tournamentTrainerCardBadges[id].name + "' already exists.";
+			this.send();
+			return;
+		}
+
+		if (!Tools.isSafeImageSource(this.newBadgeSource)) {
+			this.addBadgeError = "Badge sources must be image links beginning with https://.";
 			this.send();
 			return;
 		}
@@ -274,7 +298,7 @@ class TournamentPrizeManager extends HtmlPageBase {
 	}
 
 	saveBadgeUpdate(): void {
-		if (this.currentPicker !== 'badges' || !this.updatingBadgeId) return;
+		if (this.currentPicker !== 'badges' || !this.updatingBadgeId || !Tools.isSafeImageSource(this.updatedBadgeSource)) return;
 
 		const database = this.getDatabase();
 		if (this.updatedBadgeSource !== database.tournamentTrainerCardBadges![this.updatingBadgeId].source) {
@@ -316,6 +340,14 @@ class TournamentPrizeManager extends HtmlPageBase {
 		this.send();
 	}
 
+	cancelAddRibbon(): void {
+		if (this.currentPicker !== 'ribbons' || !this.addingRibbon) return;
+
+		this.addingRibbon = false;
+		this.addRibbonError = "";
+		this.send();
+	}
+
 	saveRibbon(): void {
 		if (this.currentPicker !== 'ribbons' || !this.addingRibbon || !this.newRibbonName || !this.newRibbonSource ||
 			!this.newRibbonWidth || !this.newRibbonHeight) return;
@@ -332,6 +364,12 @@ class TournamentPrizeManager extends HtmlPageBase {
 
 		if (id in database.tournamentTrainerCardRibbons) {
 			this.addRibbonError = "A ribbon with the name '" + database.tournamentTrainerCardRibbons[id].name + "' already exists.";
+			this.send();
+			return;
+		}
+
+		if (!Tools.isSafeImageSource(this.newRibbonSource)) {
+			this.addRibbonError = "Ribbon sources must be image links beginning with https://.";
 			this.send();
 			return;
 		}
@@ -373,7 +411,7 @@ class TournamentPrizeManager extends HtmlPageBase {
 	}
 
 	saveRibbonUpdate(): void {
-		if (this.currentPicker !== 'ribbons' || !this.updatingRibbonId) return;
+		if (this.currentPicker !== 'ribbons' || !this.updatingRibbonId || !Tools.isSafeImageSource(this.updatedRibbonSource)) return;
 
 		const database = this.getDatabase();
 		if (this.updatedRibbonSource !== database.tournamentTrainerCardRibbons![this.updatingRibbonId].source) {
@@ -429,9 +467,10 @@ class TournamentPrizeManager extends HtmlPageBase {
 			if (this.addingBadge) {
 				html += "<b>New badge</b>:";
 				html += "<br />";
+				if (this.addBadgeError) html += "<b>Error</b>: " + this.addBadgeError + "<br />";
 				html += this.newBadgeInput.render();
 
-				if (this.newBadgeSource) {
+				if (Tools.isSafeImageSource(this.newBadgeSource)) {
 					html += "<br />";
 					html += "Preview:";
 					html += "<img src='" + this.newBadgeSource + "' width=" + this.newBadgeWidth + "px height=" +
@@ -439,15 +478,18 @@ class TournamentPrizeManager extends HtmlPageBase {
 					html += "<br /><br />";
 				}
 
+				html += this.getQuietPmButton(this.commandPrefix + ", " + cancelAddBadgeCommand, "Cancel");
+				html += "&nbsp;|&nbsp;";
 				html += this.getQuietPmButton(this.commandPrefix + ", " + saveBadgeCommand,
-						"Save", {disabled: !this.newBadgeName || !this.newBadgeSource || !this.newBadgeWidth || !this.newBadgeHeight});
+						"Save", {disabled: !this.newBadgeName || !Tools.isSafeImageSource(this.newBadgeSource) ||
+							!this.newBadgeWidth || !this.newBadgeHeight});
 			} else if (this.updatingBadgeId) {
 				html += "<b>Update " + database.tournamentTrainerCardBadges![this.updatingBadgeId].name + " badge</b>:";
 				html += "<br />";
 				html += this.updatedBadgeInput.render();
 				html += "<br />";
 
-				if (this.updatedBadgeSource) {
+				if (Tools.isSafeImageSource(this.updatedBadgeSource)) {
 					html += "Preview:";
 					html += "<img src='" + this.updatedBadgeSource + "' width=" + this.updatedBadgeWidth + "px height=" +
 						this.updatedBadgeHeight + "px />";
@@ -457,7 +499,8 @@ class TournamentPrizeManager extends HtmlPageBase {
 				html += this.getQuietPmButton(this.commandPrefix + ", " + cancelBadgeUpdateCommand, "Cancel");
 				html += "&nbsp;|&nbsp;";
 				html += this.getQuietPmButton(this.commandPrefix + ", " + saveBadgeUpdateCommand,
-					"Save", {disabled: !this.updatedBadgeSource || !this.updatedBadgeWidth || !this.updatedBadgeHeight});
+					"Save", {disabled: !Tools.isSafeImageSource(this.updatedBadgeSource) || !this.updatedBadgeWidth ||
+						!this.updatedBadgeHeight});
 			} else {
 				html += this.getQuietPmButton(this.commandPrefix + ", " + startAddBadgeCommand, "Add new badge");
 			}
@@ -481,9 +524,10 @@ class TournamentPrizeManager extends HtmlPageBase {
 			if (this.addingRibbon) {
 				html += "<b>New ribbon</b>:";
 				html += "<br />";
+				if (this.addRibbonError) html += "<b>Error</b>: " + this.addRibbonError + "<br />";
 				html += this.newRibbonInput.render();
 
-				if (this.newRibbonSource) {
+				if (Tools.isSafeImageSource(this.newRibbonSource)) {
 					html += "<br />";
 					html += "Preview:";
 					html += "<img src='" + this.newRibbonSource + "' width=" + this.newRibbonWidth + "px height=" +
@@ -491,15 +535,18 @@ class TournamentPrizeManager extends HtmlPageBase {
 					html += "<br /><br />";
 				}
 
+				html += this.getQuietPmButton(this.commandPrefix + ", " + cancelAddRibbonCommand, "Cancel");
+				html += "&nbsp;|&nbsp;";
 				html += this.getQuietPmButton(this.commandPrefix + ", " + saveRibbonCommand,
-						"Save", {disabled: !this.newRibbonName || !this.newRibbonSource || !this.newRibbonWidth || !this.newRibbonHeight});
+						"Save", {disabled: !this.newRibbonName || !Tools.isSafeImageSource(this.newRibbonSource) ||
+							!this.newRibbonWidth || !this.newRibbonHeight});
 			} else if (this.updatingRibbonId) {
 				html += "<b>Update " + database.tournamentTrainerCardRibbons![this.updatingRibbonId].name + " ribbon</b>:";
 				html += "<br />";
 				html += this.updatedRibbonInput.render();
 				html += "<br />";
 
-				if (this.updatedRibbonSource) {
+				if (Tools.isSafeImageSource(this.updatedRibbonSource)) {
 					html += "Preview:";
 					html += "<img src='" + this.updatedRibbonSource + "' width=" + this.updatedRibbonWidth + "px height=" +
 						this.updatedRibbonHeight + "px />";
@@ -509,7 +556,8 @@ class TournamentPrizeManager extends HtmlPageBase {
 				html += this.getQuietPmButton(this.commandPrefix + ", " + cancelRibbonUpdateCommand, "Cancel");
 				html += "&nbsp;|&nbsp;";
 				html += this.getQuietPmButton(this.commandPrefix + ", " + saveRibbonUpdateCommand,
-					"Save", {disabled: !this.updatedRibbonSource || !this.updatedRibbonWidth || !this.updatedRibbonHeight});
+					"Save", {disabled: !Tools.isSafeImageSource(this.updatedRibbonSource) || !this.updatedRibbonWidth ||
+						!this.updatedRibbonHeight});
 			} else {
 				html += this.getQuietPmButton(this.commandPrefix + ", " + startAddRibbonCommand, "Add new ribbon");
 			}
@@ -531,6 +579,14 @@ export const commands: BaseCommandDefinitions = {
 
 			if (!user.hasRank(targetRoom, 'driver')) return;
 
+			if (!Config.showTournamentTrainerCards || !Config.showTournamentTrainerCards.includes(targetRoom.id)) {
+				return this.say("Tournament trainer cards are not enabled for " + targetRoom.title + ".");
+			}
+
+			if (!Tournaments.getTrainerCardRoom(targetRoom)) {
+				return this.say("Tournament trainer card prizes cannot currently be edited for " + targetRoom.title + ".");
+			}
+
 			const cmd = Tools.toId(targets[0]);
 			targets.shift();
 
@@ -547,20 +603,24 @@ export const commands: BaseCommandDefinitions = {
 				pages[user.id].chooseRibbons();
 			} else if (cmd === startAddBadgeCommand) {
 				pages[user.id].startAddBadge();
+			} else if (cmd === cancelAddBadgeCommand) {
+				pages[user.id].cancelAddBadge();
 			} else if (cmd === saveBadgeCommand) {
 				pages[user.id].saveBadge();
 			} else if (cmd === startBadgeUpdateCommand) {
-				pages[user.id].startBadgeUpdate(targets[0]);
+				pages[user.id].startBadgeUpdate(Tools.toId(targets[0]));
 			} else if (cmd === cancelBadgeUpdateCommand) {
 				pages[user.id].cancelBadgeUpdate();
 			} else if (cmd === saveBadgeUpdateCommand) {
 				pages[user.id].saveBadgeUpdate();
 			} else if (cmd === startAddRibbonCommand) {
 				pages[user.id].startAddRibbon();
+			} else if (cmd === cancelAddRibbonCommand) {
+				pages[user.id].cancelAddRibbon();
 			} else if (cmd === saveRibbonCommand) {
 				pages[user.id].saveRibbon();
 			} else if (cmd === startRibbonUpdateCommand) {
-				pages[user.id].startRibbonUpdate(targets[0]);
+				pages[user.id].startRibbonUpdate(Tools.toId(targets[0]));
 			} else if (cmd === cancelRibbonUpdateCommand) {
 				pages[user.id].cancelRibbonUpdate();
 			} else if (cmd === saveRibbonUpdateCommand) {

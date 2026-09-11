@@ -27,6 +27,7 @@ export class TrainerCardBadgePicker extends PickerBase {
 	getChoiceButtonHtml(id: string): string {
 		if (this.props.database.tournamentTrainerCardBadges && id in this.props.database.tournamentTrainerCardBadges) {
 			const badge = this.props.database.tournamentTrainerCardBadges[id];
+			if (!Tools.isSafeImageSource(badge.source)) return badge.name;
 			return "<img src='" + badge.source + "' width=" + badge.width + "px height=" + badge.height + "px /><br />" + badge.name;
 		}
 
