@@ -15,12 +15,18 @@ const saveBadgeCommand = 'savebadge';
 const startBadgeUpdateCommand = 'startbadgeupdate';
 const cancelBadgeUpdateCommand = 'cancelbadgeupdate';
 const saveBadgeUpdateCommand = 'savebadgeupdate';
+const startBadgeDeleteCommand = 'startbadgedelete';
+const cancelBadgeDeleteCommand = 'cancelbadgedelete';
+const confirmBadgeDeleteCommand = 'confirmbadgedelete';
 const startAddRibbonCommand = 'startaddribbon';
 const cancelAddRibbonCommand = 'canceladdribbon';
 const saveRibbonCommand = 'saveribbon';
 const startRibbonUpdateCommand = 'startribbonupdate';
 const cancelRibbonUpdateCommand = 'cancelribbonupdate';
 const saveRibbonUpdateCommand = 'saveribbonupdate';
+const startRibbonDeleteCommand = 'startribbondelete';
+const cancelRibbonDeleteCommand = 'cancelribbondelete';
+const confirmRibbonDeleteCommand = 'confirmribbondelete';
 const newBadgeCommand = 'newbadge';
 const updateBadgeCommand = 'updatebadge';
 const newRibbonCommand = 'newribbon';
@@ -59,6 +65,8 @@ class TournamentPrizeManager extends HtmlPageBase {
 	addRibbonError: string = '';
 	updatingBadgeId: string = '';
 	updatingRibbonId: string = '';
+	deletingBadgeId: string = '';
+	deletingRibbonId: string = '';
 
 	newBadgeInput: TrainerCardPrize;
 	updatedBadgeInput: TrainerCardPrize;
@@ -283,6 +291,7 @@ class TournamentPrizeManager extends HtmlPageBase {
 		if (!database.tournamentTrainerCardBadges || !(id in database.tournamentTrainerCardBadges)) return;
 
 		this.updatingBadgeId = id;
+		this.deletingBadgeId = "";
 
 		const badge = database.tournamentTrainerCardBadges[id];
 		this.updatedBadgeSource = badge.source;
@@ -318,6 +327,60 @@ class TournamentPrizeManager extends HtmlPageBase {
 		if (this.currentPicker !== 'badges' || !this.updatingBadgeId) return;
 
 		this.updatingBadgeId = "";
+		this.send();
+	}
+
+	startBadgeDelete(id: string): void {
+		if (this.currentPicker !== 'badges' || id === this.deletingBadgeId) return;
+
+		const database = this.getDatabase();
+		if (!database.tournamentTrainerCardBadges || !(id in database.tournamentTrainerCardBadges)) return;
+
+		this.deletingBadgeId = id;
+		this.send();
+	}
+
+	cancelBadgeDelete(): void {
+		if (this.currentPicker !== 'badges' || !this.deletingBadgeId) return;
+
+		this.deletingBadgeId = "";
+		this.send();
+	}
+
+	confirmBadgeDelete(): void {
+		if (this.currentPicker !== 'badges' || !this.deletingBadgeId) return;
+
+		const id = this.deletingBadgeId;
+		this.deletingBadgeId = "";
+
+		const database = this.getDatabase();
+		if (!database.tournamentTrainerCardBadges || !(id in database.tournamentTrainerCardBadges)) {
+			this.send();
+			return;
+		}
+
+		const name = database.tournamentTrainerCardBadges[id].name;
+		delete database.tournamentTrainerCardBadges[id];
+
+		let holders = 0;
+		if (database.tournamentTrainerCards) {
+			for (const i in database.tournamentTrainerCards) {
+				const badges = database.tournamentTrainerCards[i].badges;
+				if (!badges) continue;
+
+				const index = badges.indexOf(id);
+				if (index !== -1) {
+					badges.splice(index, 1);
+					holders++;
+				}
+			}
+		}
+
+		if (this.updatingBadgeId === id) this.updatingBadgeId = "";
+
+		this.room.modnote(this.userName + " deleted the " + name + " badge" +
+			(holders ? " from " + holders + " trainer card" + (holders > 1 ? "s" : "") : ""));
+
 		this.send();
 	}
 
@@ -396,6 +459,7 @@ class TournamentPrizeManager extends HtmlPageBase {
 		if (!database.tournamentTrainerCardRibbons || !(id in database.tournamentTrainerCardRibbons)) return;
 
 		this.updatingRibbonId = id;
+		this.deletingRibbonId = "";
 
 		const ribbon = database.tournamentTrainerCardRibbons[id];
 		this.updatedRibbonSource = ribbon.source;
@@ -434,6 +498,67 @@ class TournamentPrizeManager extends HtmlPageBase {
 		this.send();
 	}
 
+	startRibbonDelete(id: string): void {
+		if (this.currentPicker !== 'ribbons' || id === this.deletingRibbonId) return;
+
+		const database = this.getDatabase();
+		if (!database.tournamentTrainerCardRibbons || !(id in database.tournamentTrainerCardRibbons)) return;
+
+		this.deletingRibbonId = id;
+		this.send();
+	}
+
+	cancelRibbonDelete(): void {
+		if (this.currentPicker !== 'ribbons' || !this.deletingRibbonId) return;
+
+		this.deletingRibbonId = "";
+		this.send();
+	}
+
+	confirmRibbonDelete(): void {
+		if (this.currentPicker !== 'ribbons' || !this.deletingRibbonId) return;
+
+		const id = this.deletingRibbonId;
+		this.deletingRibbonId = "";
+
+		const database = this.getDatabase();
+		if (!database.tournamentTrainerCardRibbons || !(id in database.tournamentTrainerCardRibbons)) {
+			this.send();
+			return;
+		}
+
+		const name = database.tournamentTrainerCardRibbons[id].name;
+		delete database.tournamentTrainerCardRibbons[id];
+
+		let holders = 0;
+		if (database.tournamentTrainerCards) {
+			for (const i in database.tournamentTrainerCards) {
+				const ribbons = database.tournamentTrainerCards[i].ribbons;
+				if (!ribbons) continue;
+
+				const index = ribbons.indexOf(id);
+				if (index !== -1) {
+					ribbons.splice(index, 1);
+					holders++;
+				}
+			}
+		}
+
+		if (database.unlockedTournamentPointsShopRibbons) {
+			for (const i in database.unlockedTournamentPointsShopRibbons) {
+				const index = database.unlockedTournamentPointsShopRibbons[i].indexOf(id);
+				if (index !== -1) database.unlockedTournamentPointsShopRibbons[i].splice(index, 1);
+			}
+		}
+
+		if (this.updatingRibbonId === id) this.updatingRibbonId = "";
+
+		this.room.modnote(this.userName + " deleted the " + name + " ribbon" +
+			(holders ? " from " + holders + " trainer card" + (holders > 1 ? "s" : "") : ""));
+
+		this.send();
+	}
+
 	render(): string {
 		let html = "<div class='chat' style='margin-top: 4px;margin-left: 4px'><center><b>" +
 			this.room.title + " Tournament Prize Manager</b>";
@@ -458,6 +583,16 @@ class TournamentPrizeManager extends HtmlPageBase {
 					html += database.tournamentTrainerCardBadges[i].name + ":&nbsp;" + Tournaments.getBadgeHtml(database, i);
 					html += "&nbsp;" + this.getQuietPmButton(this.commandPrefix + ", " + startBadgeUpdateCommand + "," + i,
 						"Edit", {disabled: i === this.updatingBadgeId});
+
+					if (i === this.deletingBadgeId) {
+						html += "&nbsp;Delete this badge and remove it from all trainer cards?&nbsp;";
+						html += this.getQuietPmButton(this.commandPrefix + ", " + confirmBadgeDeleteCommand, "Confirm");
+						html += "&nbsp;" + this.getQuietPmButton(this.commandPrefix + ", " + cancelBadgeDeleteCommand, "Cancel");
+					} else {
+						html += "&nbsp;" + this.getQuietPmButton(this.commandPrefix + ", " + startBadgeDeleteCommand + "," + i,
+							"Delete");
+					}
+
 					html += "<br />";
 				}
 
@@ -515,6 +650,16 @@ class TournamentPrizeManager extends HtmlPageBase {
 						Tournaments.getRibbonHtml(this.trainerCardRoom, database, i);
 					html += "&nbsp;" + this.getQuietPmButton(this.commandPrefix + ", " + startRibbonUpdateCommand + "," + i,
 						"Edit", {disabled: i === this.updatingRibbonId});
+
+					if (i === this.deletingRibbonId) {
+						html += "&nbsp;Delete this ribbon and remove it from all trainer cards?&nbsp;";
+						html += this.getQuietPmButton(this.commandPrefix + ", " + confirmRibbonDeleteCommand, "Confirm");
+						html += "&nbsp;" + this.getQuietPmButton(this.commandPrefix + ", " + cancelRibbonDeleteCommand, "Cancel");
+					} else {
+						html += "&nbsp;" + this.getQuietPmButton(this.commandPrefix + ", " + startRibbonDeleteCommand + "," + i,
+							"Delete");
+					}
+
 					html += "<br />";
 				}
 
@@ -613,6 +758,12 @@ export const commands: BaseCommandDefinitions = {
 				pages[user.id].cancelBadgeUpdate();
 			} else if (cmd === saveBadgeUpdateCommand) {
 				pages[user.id].saveBadgeUpdate();
+			} else if (cmd === startBadgeDeleteCommand) {
+				pages[user.id].startBadgeDelete(Tools.toId(targets[0]));
+			} else if (cmd === cancelBadgeDeleteCommand) {
+				pages[user.id].cancelBadgeDelete();
+			} else if (cmd === confirmBadgeDeleteCommand) {
+				pages[user.id].confirmBadgeDelete();
 			} else if (cmd === startAddRibbonCommand) {
 				pages[user.id].startAddRibbon();
 			} else if (cmd === cancelAddRibbonCommand) {
@@ -625,6 +776,12 @@ export const commands: BaseCommandDefinitions = {
 				pages[user.id].cancelRibbonUpdate();
 			} else if (cmd === saveRibbonUpdateCommand) {
 				pages[user.id].saveRibbonUpdate();
+			} else if (cmd === startRibbonDeleteCommand) {
+				pages[user.id].startRibbonDelete(Tools.toId(targets[0]));
+			} else if (cmd === cancelRibbonDeleteCommand) {
+				pages[user.id].cancelRibbonDelete();
+			} else if (cmd === confirmRibbonDeleteCommand) {
+				pages[user.id].confirmRibbonDelete();
 			} else if (cmd === CLOSE_COMMAND) {
 				if (user.id in pages) pages[user.id].close();
 			} else {
