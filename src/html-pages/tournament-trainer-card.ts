@@ -213,6 +213,18 @@ export class TournamentTrainerCard extends HtmlPageBase {
 		this.pokemonPicker.active = this.currentPicker === 'pokemon';
 	}
 
+	/**The footer color is only visible on the rows that it backs */
+	hasFooterRow(): boolean {
+		if (!this.targetUserId) return false;
+
+		const database = this.getDatabase();
+		if (!database.tournamentTrainerCards || !(this.targetUserId in database.tournamentTrainerCards)) return false;
+
+		const trainerCard = database.tournamentTrainerCards[this.targetUserId];
+		return !!((trainerCard.badges && trainerCard.badges.length) || (trainerCard.ribbons && trainerCard.ribbons.length) ||
+			trainerCard.bio);
+	}
+
 	loadTournamentTrainerCard(): void {
 		if (!this.targetUserId) return;
 
@@ -627,6 +639,12 @@ export class TournamentTrainerCard extends HtmlPageBase {
 		} else if (table) {
 			html += this.tableColorPicker.render();
 		} else if (footer) {
+			if (!this.hasFooterRow()) {
+				html += "<b>Note</b>: the footer color is only used by the badges, ribbons and bio rows, so it will not appear " +
+					"on the card until it has at least one of them.";
+				html += "<br /><br />";
+			}
+
 			html += this.footerColorPicker.render();
 		} else if (pokemon) {
 			html += this.pokemonPicker.render();
