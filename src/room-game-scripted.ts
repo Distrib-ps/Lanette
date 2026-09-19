@@ -697,12 +697,7 @@ export class ScriptedGame extends Game {
 			Games.setLastWinners(this.room, Array.from(this.winners.keys()).map(x => x.name));
 			database.lastGameTime = now;
 
-			if (!database.lastGameFormatTimes) database.lastGameFormatTimes = {};
-			database.lastGameFormatTimes[this.format.id] = now;
-			const idWithOptions = Tools.toId(this.format.nameWithOptions);
-			if (idWithOptions !== this.format.id) {
-				database.lastGameFormatTimes[idWithOptions] = now;
-			}
+			this.updateLastGameFormatTime(this.room, now);
 
 			if (!database.pastGames) database.pastGames = [];
 			database.pastGames.unshift({inputTarget: this.format.inputTarget, name: this.name, time: now});
@@ -727,6 +722,17 @@ export class ScriptedGame extends Game {
 		Games.setNextScheduledGame(this.room);
 
 		this.deallocate(false);
+	}
+
+	updateLastGameFormatTime(room: Room, now: number): void {
+		const database = Storage.getDatabase(room);
+		if (!database.lastGameFormatTimes) database.lastGameFormatTimes = {};
+		database.lastGameFormatTimes[this.format.id] = now;
+
+		const idWithOptions = Tools.toId(this.format.nameWithOptions);
+		if (idWithOptions !== this.format.id) {
+			database.lastGameFormatTimes[idWithOptions] = now;
+		}
 	}
 
 	forceEnd(user: User, reason?: string): void {
@@ -777,6 +783,13 @@ export class ScriptedGame extends Game {
 
 	deallocate(forceEnd: boolean): void {
 		if (!this.ended) this.ended = true;
+
+		// tournament games that are cancelled or forcibly ended still count for the rotation to avoid repeats
+		if (forceEnd && this.format.tournamentGame && !this.parentGame && !this.internalGame && !this.isMiniGame &&
+			!this.isPmActivity(this.room)) {
+			this.updatedDatabase = true;
+			this.updateLastGameFormatTime(this.room, Date.now());
+		}
 
 		if (this.htmlPages.size) {
 			this.htmlPages.forEach(htmlPage => {
