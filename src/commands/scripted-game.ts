@@ -1111,6 +1111,31 @@ export const commands: BaseCommandDefinitions = {
 		},
 		description: ["ends the current game"],
 	},
+	enablegame: {
+		command(target, room, user) {
+			if (this.isPm(room) || !user.hasRank(room, 'driver')) return;
+
+			if (!target) {
+				const disabledFormats = Games.getFormatsDisabledByError();
+				if (!disabledFormats.length) return this.say("No games are currently disabled by an error.");
+				this.say("Games disabled by an error: " + Tools.joinList(disabledFormats) + ".");
+				return;
+			}
+
+			const format = Games.getFormat(target);
+			if (Array.isArray(format)) return this.sayError(format);
+
+			if (!Games.isFormatDisabledByError(format)) {
+				return this.say(format.name + " is not disabled by an error.");
+			}
+
+			Games.enableFormat(format);
+			this.say(format.name + " has been re-enabled.");
+		},
+		aliases: ['reenablegame'],
+		syntax: ["[game]"],
+		description: ["re-enables a game that was disabled by an error, or lists them with no input"],
+	},
 	joingame: {
 		command(target, room, user) {
 			if (this.isPm(room)) {

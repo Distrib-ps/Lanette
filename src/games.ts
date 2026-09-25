@@ -131,6 +131,7 @@ export class Games {
 	private autoCreateTimerData: Dict<{endTime: number, type: AutoCreateTimerType}> = {};
 	private readonly formats: Formats = {};
 	private readonly formatModules: NodeModule[] = [];
+	private readonly formatsDisabledByError = new Set<string>();
 	private readonly freejoinFormatTargets: string[] = [];
 	private gameCooldownMessageTimers: Dict<NodeJS.Timeout> = {};
 	private gameCooldownMessageTimerData: Dict<{endTime: number, minigameCooldownMinutes: number}> = {};
@@ -1459,6 +1460,7 @@ export class Games {
 		if (format.id in this.formats) {
 			// @ts-expect-error
 			this.formats[format.id].disabled = true;
+			this.formatsDisabledByError.add(format.id);
 		}
 	}
 
@@ -1466,7 +1468,21 @@ export class Games {
 		if (format.id in this.formats) {
 			// @ts-expect-error
 			this.formats[format.id].disabled = false;
+			this.formatsDisabledByError.delete(format.id);
 		}
+	}
+
+	/** only formats disabled by an in-game error, not those disabled in their definition */
+	isFormatDisabledByError(format: IGameFormat): boolean {
+		return this.formatsDisabledByError.has(format.id);
+	}
+
+	getFormatsDisabledByError(): string[] {
+		const names: string[] = [];
+		this.formatsDisabledByError.forEach(id => {
+			if (id in this.formats) names.push(this.formats[id].name);
+		});
+		return names.sort();
 	}
 
 	disableInternalFormat(key: InternalGame): void {
