@@ -58,7 +58,7 @@ export abstract class GamePageBase extends ActivityPageBase {
     renderSelector(selector: HtmlSelector): string {
         let html = "";
         if (selector === this.headerSelector) {
-            html += "<center><b>" + (this.pageName || this.activity.format.nameWithOptions) + "</b>";
+            html += "<center><b>" + Tools.escapeHTML(this.pageName || this.activity.format.nameWithOptions) + "</b>";
 
             if (this.closeButtonHtml && !this.activity.ended) {
                 html += "&nbsp;" + this.closeButtonHtml;
@@ -79,7 +79,7 @@ export abstract class GamePageBase extends ActivityPageBase {
     // both render types need to remain to allow pages to be moved to the chat
     render(): string {
         let html = "<div class='chat' style='margin-top: 4px;margin-left: 4px'><center><b>" +
-            (this.pageName || this.activity.format.nameWithOptions) + "</b>";
+            Tools.escapeHTML(this.pageName || this.activity.format.nameWithOptions) + "</b>";
 
         if (this.closeButtonHtml && !this.activity.ended) {
             html += "&nbsp;" + this.closeButtonHtml;

@@ -796,10 +796,16 @@ export class ScriptedGame extends Game {
 				// already destroyed in CommandParser.onDestroyUser()
 				if (htmlPage.destroyed) return;
 
-				if (this.dontAutoCloseHtmlPages) {
-					htmlPage.sendClosingSnapshot();
-				} else {
-					htmlPage.close();
+				// never let a page error prevent the game from being cleaned up
+				try {
+					if (this.dontAutoCloseHtmlPages) {
+						htmlPage.sendClosingSnapshot();
+					} else {
+						htmlPage.close();
+					}
+				} catch (e) {
+					console.log(e);
+					Tools.logException(e as NodeJS.ErrnoException, this.name + " deallocate() html page");
 				}
 			});
 		}
