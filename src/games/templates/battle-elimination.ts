@@ -1374,7 +1374,7 @@ export abstract class BattleElimination extends ScriptedGame {
 	}
 
 	getSignupsDescriptionHtml(): string {
-		let html = "<div class='infobox'><b>" + Users.self.name + " is hosting a " + this.name + " tournament!</b>";
+		let html = "<div class='infobox'><b>" + Users.self.name + " is hosting a " + Tools.escapeHTML(this.name) + " tournament!</b>";
 		if (this.htmlPageGameDescription) html += "<br />" + this.htmlPageGameDescription;
 		if (this.customRuleInfoDisplay) html += "<br /><br />" + this.customRuleInfoDisplay;
 		html += "<br /><br />";
@@ -1495,7 +1495,7 @@ export abstract class BattleElimination extends ScriptedGame {
 	async onSignups(): Promise<void> {
 		this.generatePokedex();
 
-		this.htmlPageHeader = "<h2>" + this.room.title + "'s " + this.htmlPageGameName + "</h2><hr />";
+		this.htmlPageHeader = "<h2>" + this.room.title + "'s " + Tools.escapeHTML(this.htmlPageGameName) + "</h2><hr />";
 
 		const maxPlayers = this.getMaxPlayers(this.pokedex.length);
 		if (maxPlayers < this.maxPlayers) this.maxPlayers = maxPlayers;
@@ -1540,8 +1540,8 @@ export abstract class BattleElimination extends ScriptedGame {
 	endAdvertisements(): void {
 		if (this.advertisementInterval) clearInterval(this.advertisementInterval);
 		if (this.playerCount < this.minPlayers) {
-			this.sayUhtmlAuto(this.uhtmlBaseName + '-signups', "<b>The " + this.name + " tournament is cancelled due to a lack of players" +
-				"</b>");
+			this.sayUhtmlAuto(this.uhtmlBaseName + '-signups', "<b>The " + Tools.escapeHTML(this.name) +
+				" tournament is cancelled due to a lack of players</b>");
 			this.dontAutoCloseHtmlPages = false;
 			this.setAutoCreateTimer(1);
 
@@ -1599,7 +1599,7 @@ export abstract class BattleElimination extends ScriptedGame {
 	startElimination(): void {
 		this.eliminationStarted = true;
 
-		let html = Users.self.name + "'s " + this.name + " tournament has started! You have " +
+		let html = Users.self.name + "'s " + Tools.escapeHTML(this.name) + " tournament has started! You have " +
 			Tools.toDurationString(this.firstRoundTime) + " to build your team and start the first battle.";
 		if (!this.subRoom) {
 			this.canReroll = false;
