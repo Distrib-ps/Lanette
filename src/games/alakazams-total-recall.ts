@@ -25,6 +25,7 @@ const data: {pokemon: string[], gifData: Dict<IGifDirectionData>} = {
 class AlakazamsTotalRecall extends QuestionAndAnswer {
 	answerCommands: string[] = [answerCommand];
 	cooldownBetweenRounds: number = 5 * 1000;
+	guessesPerRound = new Map<Player, number>();
 	inactiveRoundLimit: number = 5;
 	lastDifferenceCoordinates: [number, number] | null = null;
 	roundPokemon: string[][] = [];
@@ -205,6 +206,7 @@ class AlakazamsTotalRecall extends QuestionAndAnswer {
 
 	// eslint-disable-next-line @typescript-eslint/require-await
 	async beforeNextRound(newAnswer: boolean): Promise<boolean> {
+		this.guessesPerRound.clear();
 		if (newAnswer) {
 			this.sayUhtml(this.uhtmlBaseName + '-round-html', this.getRoundHtml(() => this.getPlayerPoints()));
 		}
@@ -217,6 +219,10 @@ class AlakazamsTotalRecall extends QuestionAndAnswer {
 	}
 
 	filterGuess(target: string, player: Player): boolean {
+		const guesses = this.guessesPerRound.get(player) || 0;
+		console.log(guesses);
+		if (guesses >= 3) return true;
+
 		const targets = Tools.toId(target.split(",")[0]).split("");
 		if (targets.length !== 2) {
 			player.say("You must specify a letter and number corresponding to the grid.");
@@ -236,6 +242,8 @@ class AlakazamsTotalRecall extends QuestionAndAnswer {
 			player.say("You must specify a row between 1 and " + this.roundRowsPerGrid + "!");
 			return true;
 		}
+
+		this.guessesPerRound.set(player, guesses + 1);
 
 		return !this.validateSelectedCoordinates(letterIndex >= this.roundPokemonPerGridRow ? letterIndex - this.roundPokemonPerGridRow :
 			letterIndex, number);
@@ -264,7 +272,7 @@ export const game: IGameFile<AlakazamsTotalRecall> = {
 	customizableNumberOptions: {
 		points: {min: 10, base: 10, max: 10},
 	},
-	description: "Each round players try to be the first to recall the location of the selected Pokemon!",
+	description: "Each round players try to be the first to recall the location of the selected Pokemon (three guesses per round)!",
 	freejoin: true,
 	name: "Alakazam's Total Recall",
 	mascot: "Alakazam",
