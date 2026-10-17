@@ -46,7 +46,6 @@ class RabscasStatRoller extends QuestionAndAnswer {
         for (let pokemon of selectedPokemon) {
             if (pokemon.includes("Gmax")) {
                 pokemon = pokemon.substring(0, pokemon.length - 5);
-                console.log(pokemon);
             }
             this.selectedPokemonValues[pokemon] = data[pokemon][statIndex];
         }
