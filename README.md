@@ -49,3 +49,4 @@ If possible, it is best to use [Visual Studio Code](https://code.visualstudio.co
 
 ## License
 Lanette is distributed under the terms of the [MIT License](https://github.com/sirDonovan/Lanette/blob/master/LICENSE).
+
