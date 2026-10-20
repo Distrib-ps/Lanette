@@ -17,16 +17,20 @@ class RabscasStatRoller extends QuestionAndAnswer {
     // eslint-disable-next-line @typescript-eslint/require-await
 	static async loadData(): Promise<void> {
 		for (const pokemon of Games.getPokemonList()) {
-            data[pokemon.name] = [];
-			data[pokemon.name].push(pokemon.baseStats.hp);
-			data[pokemon.name].push(pokemon.baseStats.atk);
-			data[pokemon.name].push(pokemon.baseStats.def);
-			data[pokemon.name].push(pokemon.baseStats.spa);
-			data[pokemon.name].push(pokemon.baseStats.spd);
-			data[pokemon.name].push(pokemon.baseStats.spe);
-			data[pokemon.name].push(pokemon.bst);
-			data[pokemon.name].push(pokemon.weightkg);
-			data[pokemon.name].push(pokemon.heightm);
+            if (pokemon.name.includes("-Gmax") || pokemon.name.includes("-Eternamax")) {
+                continue;
+            }
+            data[pokemon.name] = [
+                pokemon.baseStats.hp,
+                pokemon.baseStats.atk,
+                pokemon.baseStats.def,
+                pokemon.baseStats.spa,
+                pokemon.baseStats.spd,
+                pokemon.baseStats.spe,
+                pokemon.bst,
+                pokemon.weightkg,
+                pokemon.heightm
+            ]
 		}
 	}
 
@@ -43,10 +47,7 @@ class RabscasStatRoller extends QuestionAndAnswer {
         this.min = 1000;
         this.extremaPokemon = [];
 
-        for (let pokemon of selectedPokemon) {
-            if (pokemon.includes("Gmax")) {
-                pokemon = pokemon.substring(0, pokemon.length - 5);
-            }
+        for (const pokemon of selectedPokemon) {
             this.selectedPokemonValues[pokemon] = data[pokemon][statIndex];
         }
 
