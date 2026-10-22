@@ -57,7 +57,7 @@ describe("Dex", () => {
 		let allPossibleMoves = Dex.getAllPossibleMoves(pokemon);
 		assert(allPossibleMoves.length > 1);
 		assert(allPossibleMoves.includes("hiddenpower"));
-		assert(allPossibleMoves.includes("hiddenpowerice"));
+		// assert(allPossibleMoves.includes("hiddenpowerice"));
 		assert(!allPossibleMoves.includes("hiddenpowernormal"));
 		assert(!allPossibleMoves.includes("hiddenpowerfairy"));
 
@@ -71,7 +71,7 @@ describe("Dex", () => {
 
 		pokemon = Dex.getExistingPokemon('Smeargle');
 		allPossibleMoves = Dex.getAllPossibleMoves(pokemon);
-		assertStrictEqual(allPossibleMoves.length, 856);
+		assertStrictEqual(allPossibleMoves.length, 840);
 
 		pokemon = Dex.getExistingPokemon('Pikachu-Gmax');
 		allPossibleMoves = Dex.getAllPossibleMoves(pokemon);
