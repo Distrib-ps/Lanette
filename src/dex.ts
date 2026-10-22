@@ -14,7 +14,7 @@ import type {
 import type {
 	IAbility, IAbilityCopy, IFormat, IItem, IItemCopy, IMove, IMoveCopy, INature, IPokemon, IPokemonCopy,
 	IPokemonShowdownDex, IPokemonShowdownDexModule, IPokemonShowdownTagsModule, IPokemonShowdownValidator, IPokemonShowdownValidatorModule,
-	IPSFormat, IPSPokemon, ITagData, ITypeData, RuleTable, ValidatedRule
+	IPSFormat, IPSPokemon, ITagData, ITypeData, RuleTable, ValidatedRule, ResolvedText
 } from './types/pokemon-showdown';
 import type { IParsedSmogonLink } from './types/tools';
 
@@ -544,6 +544,18 @@ export class Dex {
 				.catch(e => {
 					Tools.logException(e as Error, "Error fetching client file " + fileName);
 				});
+		}
+	}
+
+	getText(n: IAbility | IItem | IMove): ResolvedText | undefined {
+		const textData = this.pokemonShowdownDex.loadTextData();
+		switch(n.effectType) {
+			case "Ability":
+				return textData.Abilities[n.id];
+			case "Item":
+				return textData.Items[n.id];
+			case "Move":
+				return textData.Moves[n.id];
 		}
 	}
 

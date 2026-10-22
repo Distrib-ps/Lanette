@@ -30,7 +30,8 @@ class SlowkingsTrivia extends QuestionAndAnswer {
 		};
 
 		for (const ability of Games.getAbilitiesList()) {
-			const desc = ability.desc || ability.shortDesc;
+			const descData = Dex.getText(ability);
+			const desc = descData?.desc || descData?.shortDesc;
 			if (!desc) continue;
 			if (!(desc in categoryHints["Pokemon Abilities"])) {
 				categoryHints["Pokemon Abilities"][desc] = [];
@@ -40,7 +41,8 @@ class SlowkingsTrivia extends QuestionAndAnswer {
 		}
 
 		for (const item of Games.getItemsList()) {
-			const desc = item.desc || item.shortDesc;
+			const descData = Dex.getText(item);
+			const desc = descData?.desc || descData?.shortDesc;
 			if (!desc) continue;
 			if (!(desc in categoryHints["Pokemon Items"])) {
 				categoryHints["Pokemon Items"][desc] = [];
@@ -50,7 +52,8 @@ class SlowkingsTrivia extends QuestionAndAnswer {
 		}
 
 		for (const move of Games.getMovesList()) {
-			const desc = move.desc || move.shortDesc;
+			const descData = Dex.getText(move);
+			const desc = descData?.desc || descData?.shortDesc;
 			if (!desc) continue;
 			if (!(desc in categoryHints["Pokemon Moves"])) {
 				categoryHints["Pokemon Moves"][desc] = [];

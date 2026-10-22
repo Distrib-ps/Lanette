@@ -975,6 +975,17 @@ export interface ITagData {
 	genericNumCol?: (thing: IPSPokemon | IPSMove | IPSItem | IPSAbility) => number;
 }
 
+export interface ResolvedText { name: string, desc: string, shortDesc: string };
+
+export interface ITextData {
+	Abilities: Record<string, ResolvedText>;
+	Items: Record<string, ResolvedText>;
+	Moves: Record<string, ResolvedText>;
+	Pokedex: Record<string, ResolvedText>;
+	Tags: Record<string, ResolvedText>;
+	Default: Record<string, ResolvedText>;
+}
+
 export interface IPokemonShowdownDex {
 	data: {
 		Abilities: Dict<unknown>;
@@ -1031,6 +1042,7 @@ export interface IPokemonShowdownDex {
 	forFormat: (format: IFormat) => IPokemonShowdownDex;
 	includeMods: () => void;
 	includeModData: () => void;
+	loadTextData: (lang?: string) => ITextData;
 	mod: (mod: string) => IPokemonShowdownDex;
 }
 

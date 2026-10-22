@@ -26,7 +26,8 @@ class SmearglesMysteryMoves extends QuestionAndAnswer {
 		const hintKeys: string[] = [];
 
 		for (const move of Games.getMovesList()) {
-			if (!move.shortDesc) continue;
+			const descData = Dex.getText(move);
+			if (!descData?.shortDesc) continue;
 
 			const moveHints: string[] = [];
 			moveHints.push("<b>Type</b>: " + move.type);
@@ -34,7 +35,7 @@ class SmearglesMysteryMoves extends QuestionAndAnswer {
 			moveHints.push("<b>Category</b>: " + move.category);
 			moveHints.push("<b>Accuracy</b>: " + (move.accuracy === true ? "does not check" : move.accuracy + "%"));
 			if (move.category !== 'Status') moveHints.push("<b>Base power</b>: " + move.basePower);
-			moveHints.push("<b>Description</b>: " + move.shortDesc);
+			moveHints.push("<b>Description</b>: " + descData.shortDesc);
 
 			hints[move.name] = moveHints;
 			hintKeys.push(move.name);
