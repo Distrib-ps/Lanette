@@ -34,6 +34,7 @@ class RabscasStatRoller extends QuestionAndAnswer {
 		}
 	}
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     async customGenerateHint(): Promise<void> {
         const numPokemon = this.random(MAX_POKEMON - MIN_POKEMON + 1) + MIN_POKEMON
 
