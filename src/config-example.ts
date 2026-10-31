@@ -424,6 +424,12 @@ export let gameAutoCreateTimers: Dict<number> = {};
 export let tournamentGameAutoCreateTimers: Dict<number> = {};
 
 /**
+ * The number of minutes before a scripted tournament game is automatically created after one is cancelled due to a lack of
+ * players (default 1)
+ */
+export let tournamentGameNoPlayersAutoCreateTimers: Dict<number> = {};
+
+/**
  * The number of minutes that must pass before a scripted game is automatically started
  */
 export let gameAutoStartTimers: Dict<number> = {};

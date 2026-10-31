@@ -1543,7 +1543,11 @@ export abstract class BattleElimination extends ScriptedGame {
 			this.sayUhtmlAuto(this.uhtmlBaseName + '-signups', "<b>The " + Tools.escapeHTML(this.name) +
 				" tournament is cancelled due to a lack of players</b>");
 			this.dontAutoCloseHtmlPages = false;
-			this.setAutoCreateTimer(1);
+			let autoCreateTimer = 1;
+			if (Config.tournamentGameNoPlayersAutoCreateTimers && this.room.id in Config.tournamentGameNoPlayersAutoCreateTimers) {
+				autoCreateTimer = Config.tournamentGameNoPlayersAutoCreateTimers[this.room.id];
+			}
+			this.setAutoCreateTimer(autoCreateTimer);
 
 			this.deallocate(true);
 			return;
