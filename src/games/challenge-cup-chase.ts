@@ -13,7 +13,7 @@ class ChallengeCupChase extends SearchChallengeTournament {
 		const teamPreviewHiddenFormes = Dex.getTeamPreviewHiddenFormes();
 		for (const species of this.shuffle(Dex.getUsablePokemon(this.battleFormat))) {
 			const pokemon = Dex.getExistingPokemon(species);
-			if (!this.meetsPokemonCriteria(pokemon, teamPreviewHiddenFormes)) continue;
+			if (!this.meetsPokemonCriteria(pokemon, teamPreviewHiddenFormes) || pokemon.forme) continue;
 
 			this.pokemon = pokemon.name;
 			break;
