@@ -36,16 +36,12 @@ class LampentsLabyrinth extends MapGame  {
 
 	onAchievementSpace(player: Player, floor: MapFloor, space: MapFloorSpace): void {
 		delete space.attributes.achievement;
-		const achievementResult = this.unlockAchievement(player, LampentsLabyrinth.achievements.litwicksflame);
-		const repeatUnlock = achievementResult && achievementResult.includes(player);
-		let currency = 0;
-		if (repeatUnlock) {
-			currency = this.getRandomCurrency();
-			this.points.set(player, (this.points.get(player) || 0) + currency);
-		}
+		this.unlockAchievement(player, LampentsLabyrinth.achievements.litwicksflame);
+        const currency = this.getChieveCurrency();
+        this.points.set(player, (this.points.get(player) || 0) + currency);
 		this.playerRoundInfo.get(player)!.push("You arrived at (" + space.coordinates + ") and were greeted by a Litwick. Its " +
-			"flame illuminated a small coin on the ground" + (repeatUnlock ? " worth " + currency + " " + this.currency + "! Your total " +
-			"is now " + this.points.get(player) + "." : "!"));
+			"flame illuminated a small coin on the ground" + " worth " + currency + " " + this.currency + "! Your total " +
+			"is now " + this.points.get(player) + ".");
 	}
 
 	onAddPlayer(player: Player, lateJoin?: boolean): boolean {
