@@ -1,4 +1,5 @@
 import type { IGameFile } from "../types/games";
+import type { IPokemon } from "../types/pokemon-showdown";
 import { game as questionAndAnswerGame, QuestionAndAnswer } from './templates/question-and-answer';
 
 const MIN_POKEMON = 12;
@@ -14,23 +15,32 @@ class RabscasStatRoller extends QuestionAndAnswer {
     min: number = 1000;
     extremaPokemon: string[] = [];
 
+    static getStats(pokemon: IPokemon): number[] {
+        const stats = pokemon.baseStats;
+        return [
+            stats.hp,
+            stats.atk,
+            stats.def,
+            stats.spa,
+            stats.spd,
+            stats.spe,
+            pokemon.bst,
+            pokemon.weightkg,
+            pokemon.heightm,
+        ];
+    }
+
     // eslint-disable-next-line @typescript-eslint/require-await
 	static async loadData(): Promise<void> {
 		for (const pokemon of Games.getPokemonList()) {
-            if (pokemon.name.includes("-Gmax") || pokemon.name.includes("-Eternamax")) {
-                continue;
+            if (pokemon.forme) {
+                if (pokemon.forme === "Eternamax") continue;
+                const base = Dex.getExistingPokemon(pokemon.baseSpecies);
+                const sameStats = RabscasStatRoller.getStats(pokemon).slice(0, 6).every(
+                    (stat, index) => stat === RabscasStatRoller.getStats(base)[index]);
+                if (sameStats) continue;
             }
-            data[pokemon.name] = [
-                pokemon.baseStats.hp,
-                pokemon.baseStats.atk,
-                pokemon.baseStats.def,
-                pokemon.baseStats.spa,
-                pokemon.baseStats.spd,
-                pokemon.baseStats.spe,
-                pokemon.bst,
-                pokemon.weightkg,
-                pokemon.heightm
-            ]
+            data[pokemon.name] = RabscasStatRoller.getStats(pokemon);
 		}
 	}
 
