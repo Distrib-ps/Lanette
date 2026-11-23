@@ -33,16 +33,12 @@ class PersiansGarden extends MapCurrencyGame {
 
 	onAchievementSpace(player: Player, floor: MapFloor, space: MapFloorSpace): void {
 		delete space.attributes.achievement;
-		const achievementResult = this.unlockAchievement(player, PersiansGarden.achievements.meowthscoin);
-		const repeatUnlock = achievementResult && achievementResult.includes(player);
-		let currency = 0;
-		if (repeatUnlock) {
-			currency = this.getRandomCurrency();
-			this.points.set(player, (this.points.get(player) || 0) + currency);
-		}
+		this.unlockAchievement(player, PersiansGarden.achievements.meowthscoin);
+        const currency = this.getChieveCurrency();
+        this.points.set(player, (this.points.get(player) || 0) + currency);
 		this.playerRoundInfo.get(player)!.push("You arrived at (" + space.coordinates + ") and were greeted by a Meowth. It " +
-			"scratched at a hedge and revealed a small coin" + (repeatUnlock ? " worth " + currency + " " + this.currency +
-			"! Your total is now " + this.points.get(player) + "." : "!"));
+			"scratched at a hedge and revealed a small coin" + " worth " + currency + " " + this.currency +
+			"! Your total is now " + this.points.get(player) + ".");
 	}
 
 	eliminatePlayers(): void {

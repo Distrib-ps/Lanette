@@ -517,6 +517,10 @@ export abstract class MapGame extends ScriptedGame {
 		return ((this.random(7) + 1) * 100) + ((this.random(9) + 1) * 10) + (this.random(7) + 1);
 	}
 
+    getChieveCurrency(): number {
+		return ((this.random(2) + 6) * 100) + ((this.random(9) + 1) * 10) + (this.random(7) + 1);
+	}
+
 	onCurrencySpace(player: Player, floor: MapFloor, space: MapFloorSpace): number {
 		if (!this.checkCurrencySpace(player, floor, space)) return 0;
 		let points = this.points.get(player) || 0;

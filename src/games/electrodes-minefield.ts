@@ -40,16 +40,12 @@ class ElectrodesMinefield extends MapDamageGame {
 
 	onAchievementSpace(player: Player, floor: MapFloor, space: MapFloorSpace): void {
 		delete space.attributes.achievement;
-		const achievementResult = this.unlockAchievement(player, ElectrodesMinefield.achievements.voltorbsfuse);
-		const repeatUnlock = achievementResult && achievementResult.includes(player);
-		let currency = 0;
-		if (repeatUnlock) {
-			currency = this.getRandomCurrency();
-			this.points.set(player, (this.points.get(player) || 0) + currency);
-		}
+		this.unlockAchievement(player, ElectrodesMinefield.achievements.voltorbsfuse);
+		const currency = this.getRandomCurrency();
+		this.points.set(player, (this.points.get(player) || 0) + currency);
 		this.playerRoundInfo.get(player)!.push("You arrived at (" + space.coordinates + ") and were greeted by a Voltorb. It " +
-			"rolled over a hidden switch and revealed a small coin" + (repeatUnlock ? " worth " + currency + " " + this.currency +
-			"! Your total is now " + this.points.get(player) + "." : "!"));
+			"rolled over a hidden switch and revealed a small coin" + " worth " + currency + " " + this.currency +
+			"! Your total is now " + this.points.get(player) + ".");
 	}
 
 	onDamagePlayers(): void {
